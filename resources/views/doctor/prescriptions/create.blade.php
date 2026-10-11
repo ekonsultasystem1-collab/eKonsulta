@@ -87,7 +87,7 @@
                             <optgroup label="Health center catalog">
                         @foreach($medicines as $medicine)
                             <option value="{{ $medicine->id }}" {{ old('medicine_choice') == (string) $medicine->id ? 'selected' : '' }}>
-                                {{ $medicine->name }} - {{ $medicine->strength }}
+                                {{ $medicine->name }}
                             </option>
                         @endforeach
                             </optgroup>
@@ -99,6 +99,7 @@
                     @error('medicine_choice')
                         <small class="text-danger">{{ $message }}</small>
                     @enderror
+                    <small>Medicine selection is for prescriptions only; stock is not tracked or deducted.</small>
                     <div id="other-medicine-field" class="form-group" @if(old('medicine_choice') !== 'other') hidden @endif>
                         <label for="other_medicine_name">Medicine name</label>
                         <input

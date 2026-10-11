@@ -14,9 +14,9 @@ use Barryvdh\DomPDF\Facade\Pdf;
 class DoctorPrescriptionController extends Controller
 {
     private const BASIC_MEDICINES = [
-        'basic:paracetamol' => 'Paracetamol - 500 mg',
-        'basic:amoxicillin' => 'Amoxicillin - 500 mg',
-        'basic:ibuprofen' => 'Ibuprofen - 200 mg',
+        'basic:paracetamol' => 'Paracetamol',
+        'basic:amoxicillin' => 'Amoxicillin',
+        'basic:ibuprofen' => 'Ibuprofen',
     ];
 
     /**

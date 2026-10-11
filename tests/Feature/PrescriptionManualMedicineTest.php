@@ -6,6 +6,7 @@ use App\Models\Appointment;
 use App\Models\Consultation;
 use App\Models\Doctor;
 use App\Models\HealthCenter;
+use App\Models\Medicine;
 use App\Models\Patient;
 use App\Models\Service;
 use App\Models\User;
@@ -23,9 +24,10 @@ class PrescriptionManualMedicineTest extends TestCase
         $this->actingAs($records['doctorUser'])
             ->get(route('doctor.appointments.prescription.create', $records['appointment']))
             ->assertOk()
-            ->assertSee('Paracetamol - 500 mg')
-            ->assertSee('Amoxicillin - 500 mg')
-            ->assertSee('Ibuprofen - 200 mg')
+            ->assertSee('Paracetamol')
+            ->assertSee('Amoxicillin')
+            ->assertSee('Ibuprofen')
+            ->assertDontSee('Paracetamol - 500 mg')
             ->assertSee('Other - enter medicine manually');
     }
 
@@ -54,6 +56,34 @@ class PrescriptionManualMedicineTest extends TestCase
             'dosage' => 'As prescribed',
         ]);
         $this->assertDatabaseCount('medicines', 0);
+    }
+
+    public function test_catalog_prescription_does_not_change_medicine_stock(): void
+    {
+        $records = $this->createCompletedConsultation();
+        $medicine = Medicine::create([
+            'health_center_id' => $records['healthCenter']->id,
+            'name' => 'Catalog medicine',
+            'generic_name' => 'Catalog medicine',
+            'dosage_form' => 'Tablet',
+            'strength' => '250 mg',
+            'stock_quantity' => 23,
+            'unit' => 'tablet',
+            'status' => 'active',
+        ]);
+
+        $this->actingAs($records['doctorUser'])
+            ->post(route('doctor.appointments.prescription.store', $records['appointment']), [
+                'prescription_date' => today()->toDateString(),
+                'medicine_choice' => (string) $medicine->id,
+                'dosage' => 'As prescribed',
+                'frequency' => 'As prescribed',
+                'duration' => 'As prescribed',
+                'quantity' => 1,
+            ])
+            ->assertRedirect(route('doctor.appointments.index'));
+
+        $this->assertSame(23, $medicine->fresh()->stock_quantity);
     }
 
     private function createCompletedConsultation(): array
@@ -123,6 +153,6 @@ class PrescriptionManualMedicineTest extends TestCase
             'diagnosis' => 'Test diagnosis',
         ]);
 
-        return compact('appointment', 'doctorUser');
+        return compact('appointment', 'doctorUser', 'healthCenter');
     }
 }
