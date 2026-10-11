@@ -272,6 +272,34 @@
                 </a>
 
 
+                <a href="{{ route('patient.announcements.index') }}" class="quick-action">
+
+                    <span>📣</span>
+
+                    <strong>
+                        Announcements
+                    </strong>
+
+                    <small>
+                        View health updates
+                    </small>
+
+                </a>
+
+                <a href="{{ route('patient.notifications') }}" class="quick-action">
+
+                    <span>🔔</span>
+
+                    <strong>
+                        Notifications
+                    </strong>
+
+                    <small>
+                        Review your recent alerts
+                    </small>
+
+                </a>
+
                 <a href="{{ route('patient.profile') }}" class="quick-action">
 
                     <span>👤</span>

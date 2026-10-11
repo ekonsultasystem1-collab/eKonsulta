@@ -326,6 +326,25 @@
 
                 </a>
 
+                <a
+                    href="{{ route('staff.announcements.index') }}"
+                    class="quick-action"
+                >
+
+                    <span aria-hidden="true">
+                        📣
+                    </span>
+
+                    <strong>
+                        Announcements
+                    </strong>
+
+                    <small>
+                        Share and review updates
+                    </small>
+
+                </a>
+
             </div>
 
         </section>

@@ -1219,7 +1219,7 @@ input[type="checkbox"], input[type="radio"] { width: 18px; height: 18px; accent-
     .auth-card { text-align: left; }
     .welcome-banner { flex-direction: column; align-items: flex-start; }
     .welcome-icon { width: 68px; height: 68px; }
-    .quick-actions { grid-template-columns: 1fr; }
+    .quick-actions { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }
 @media (max-width: 640px) {
     .dashboard-card, .card { padding: 16px; }
@@ -2885,6 +2885,10 @@ input[type="checkbox"], input[type="radio"] { width: 18px; height: 18px; accent-
     .admin-dashboard .dashboard-grid {
         grid-template-columns: 1fr;
     }
+
+    .admin-dashboard .quick-actions {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
 }
 
 @media (max-width: 640px) {
@@ -3112,7 +3116,7 @@ input[type="checkbox"], input[type="radio"] { width: 18px; height: 18px; accent-
     }
 
     .doctor-dashboard .quick-actions {
-        grid-template-columns: 1fr;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
     }
 }
 
@@ -3600,7 +3604,7 @@ input[type="checkbox"], input[type="radio"] { width: 18px; height: 18px; accent-
     }
 
     .patient-dashboard .quick-actions {
-        grid-template-columns: 1fr;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
     }
 }
 

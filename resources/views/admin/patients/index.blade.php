@@ -15,23 +15,13 @@
         <section class="admin-patient-panel" aria-labelledby="patient-directory-heading">
             <h2 id="patient-directory-heading" class="sr-only">Patient directory</h2>
 
-            <form method="GET" action="{{ route('admin.patients.index') }}" class="admin-patient-search">
-                <label for="patient-search">Search patients</label>
-                <div class="admin-patient-search__controls">
-                    <input
-                        id="patient-search"
-                        name="search"
-                        type="search"
-                        value="{{ $search }}"
-                        maxlength="100"
-                        placeholder="Name, email, or patient number"
-                    >
-                    <button type="submit" class="primary-button">Search</button>
-                    @if ($search !== '')
-                        <a href="{{ route('admin.patients.index') }}" class="secondary-button">Clear</a>
-                    @endif
-                </div>
-            </form>
+            <div class="admin-patient-search">
+                <x-list-search
+                    target="admin-patient-list"
+                    placeholder="Search by patient name, email, or patient number..."
+                    label="Search patient directory"
+                />
+            </div>
 
             @if ($patients->count())
                 <div class="admin-patient-table-wrap">
@@ -43,9 +33,12 @@
                                 <th scope="col">Account status</th>
                             </tr>
                         </thead>
-                        <tbody>
+                        <tbody id="admin-patient-list">
                             @foreach ($patients as $patient)
-                                <tr>
+                                <tr
+                                    data-search-item
+                                    data-sort-date="{{ optional($patient->created_at ?? $patient->user?->created_at)->toIso8601String() ?? '' }}"
+                                >
                                     <th scope="row">
                                         <span class="admin-patient-table__name">{{ $patient->user->name }}</span>
                                         <span class="admin-patient-table__number">{{ $patient->patient_number }}</span>

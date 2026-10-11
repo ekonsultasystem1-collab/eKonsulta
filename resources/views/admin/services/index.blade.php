@@ -145,7 +145,11 @@
                             <form
                                 method="POST"
                                 action="{{ route('admin.services.destroy', $service) }}"
-                                onsubmit="return confirm('Are you sure you want to delete this service?');"
+                                data-confirm-title="Delete this service?"
+                                data-confirm="This action removes the service from the system. It may affect doctor assignments and health center availability."
+                                data-confirm-ok="Delete service"
+                                data-confirm-cancel="Cancel"
+                                data-confirm-icon="warning"
                             >
 
                                 @csrf

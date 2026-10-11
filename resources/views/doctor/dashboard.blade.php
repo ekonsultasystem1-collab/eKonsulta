@@ -241,6 +241,15 @@
                     <small>View your patients</small>
                 </a>
 
+                <a
+                    href="{{ route('doctor.profile') }}"
+                    class="quick-action"
+                >
+                    <span>&#128100;</span>
+                    <strong>Profile</strong>
+                    <small>Review your clinic details</small>
+                </a>
+
             </div>
 
         </section>
