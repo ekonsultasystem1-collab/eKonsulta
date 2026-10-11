@@ -63,7 +63,7 @@
 
             @foreach($prescription->items as $item)
                 <div class="prescription-medicine">
-                    <h3>{{ $item->medicine->name ?? 'Medicine' }}</h3>
+                    <h3>{{ $item->display_name }}</h3>
 
                     @if($item->medicine)
                         <p>

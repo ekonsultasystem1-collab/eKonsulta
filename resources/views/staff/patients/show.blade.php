@@ -489,7 +489,7 @@
 
                                                 <h5>
 
-                                                    {{ $item->medicine->name }}
+                                                    {{ $item->display_name }}
 
                                                     @if($item->medicine->generic_name)
 

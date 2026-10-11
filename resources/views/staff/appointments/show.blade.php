@@ -137,13 +137,14 @@
                     <h4 class="staff-appointment-medicine-heading">Prescribed Medicines</h4>
                     @foreach($prescription->items as $item)
                         <div class="medicine-item staff-appointment-medicine">
+                            <p>
+                                💊 <strong>{{ $item->display_name }}</strong>
+                            </p>
+
                             @if($item->medicine)
-                                <p>
-                                    💊 <strong>{{ $item->medicine->name }}</strong>
-                                    @if($item->medicine->generic_name)
-                                        ({{ $item->medicine->generic_name }})
-                                    @endif
-                                </p>
+                                @if($item->medicine->generic_name)
+                                    <p>({{ $item->medicine->generic_name }})</p>
+                                @endif
 
                                 @if($item->medicine->strength || $item->medicine->dosage_form)
                                     <p>

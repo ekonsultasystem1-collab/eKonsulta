@@ -317,7 +317,7 @@
                                                     <div class="medicine-information">
 
                                                         <h4>
-                                                            {{ $item->medicine->name }}
+                                                            {{ $item->display_name }}
                                                         </h4>
 
                                                         @if($item->medicine->generic_name)

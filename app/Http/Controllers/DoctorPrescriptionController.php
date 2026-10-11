@@ -13,6 +13,12 @@ use Barryvdh\DomPDF\Facade\Pdf;
 
 class DoctorPrescriptionController extends Controller
 {
+    private const BASIC_MEDICINES = [
+        'basic:paracetamol' => 'Paracetamol - 500 mg',
+        'basic:amoxicillin' => 'Amoxicillin - 500 mg',
+        'basic:ibuprofen' => 'Ibuprofen - 200 mg',
+    ];
+
     /**
      * Display prescriptions created by the logged-in doctor.
      */
@@ -159,11 +165,13 @@ public function print(Prescription $prescription): View
         $medicines = Medicine::where('status', 'active')
             ->orderBy('name')
             ->get();
+        $basicMedicines = self::BASIC_MEDICINES;
 
         return view('doctor.prescriptions.create', compact(
             'appointment',
             'consultation',
-            'medicines'
+            'medicines',
+            'basicMedicines'
         ));
     }
 
@@ -192,10 +200,29 @@ public function print(Prescription $prescription): View
             abort(404, 'Consultation record not found.');
         }
 
+        $activeMedicineIds = Medicine::where('status', 'active')
+            ->pluck('id')
+            ->map(fn ($id) => (string) $id)
+            ->all();
+
         $validated = $request->validate([
             'prescription_date' => ['required', 'date'],
             'instructions' => ['nullable', 'string', 'max:2000'],
-            'medicine_id' => ['required', 'exists:medicines,id'],
+            'medicine_choice' => [
+                'required',
+                'string',
+                \Illuminate\Validation\Rule::in(array_merge(
+                    array_keys(self::BASIC_MEDICINES),
+                    $activeMedicineIds,
+                    ['other']
+                )),
+            ],
+            'other_medicine_name' => [
+                'nullable',
+                'required_if:medicine_choice,other',
+                'string',
+                'max:255',
+            ],
             'dosage' => ['required', 'string', 'max:255'],
             'frequency' => ['required', 'string', 'max:255'],
             'duration' => ['required', 'string', 'max:255'],
@@ -213,9 +240,17 @@ public function print(Prescription $prescription): View
         |
         */
 
-        $medicine = Medicine::where('id', $validated['medicine_id'])
-            ->where('status', 'active')
-            ->firstOrFail();
+        $medicine = null;
+        $medicineName = self::BASIC_MEDICINES[$validated['medicine_choice']] ?? null;
+
+        if ($validated['medicine_choice'] === 'other') {
+            $medicineName = trim($validated['other_medicine_name']);
+        } elseif ($medicineName === null) {
+            $medicine = Medicine::where('id', $validated['medicine_choice'])
+                ->where('status', 'active')
+                ->firstOrFail();
+            $medicineName = $medicine->name;
+        }
 
         $prescription = null;
 
@@ -225,6 +260,7 @@ public function print(Prescription $prescription): View
             $appointment,
             $doctor,
             $medicine,
+            $medicineName,
             &$prescription
         ) {
             $prescription = Prescription::create([
@@ -238,7 +274,8 @@ public function print(Prescription $prescription): View
             ]);
 
             $prescription->items()->create([
-                'medicine_id' => $medicine->id,
+                'medicine_id' => $medicine?->id,
+                'medicine_name' => $medicineName,
                 'dosage' => $validated['dosage'],
                 'frequency' => $validated['frequency'],
                 'duration' => $validated['duration'],

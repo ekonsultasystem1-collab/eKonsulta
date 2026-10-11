@@ -153,7 +153,7 @@
                 <div class="appointment-details">
 
                     <h4>
-                        {{ $item->medicine->name ?? 'Medicine' }}
+                        {{ $item->display_name }}
 
                         @if($item->medicine)
 

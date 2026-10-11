@@ -226,7 +226,7 @@
         <div class="medicine">
 
             <div class="medicine-name">
-                {{ $item->medicine->name ?? 'Medicine' }}
+                {{ $item->display_name }}
             </div>
 
             @if($item->medicine)

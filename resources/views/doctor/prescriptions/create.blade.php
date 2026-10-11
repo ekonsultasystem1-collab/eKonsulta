@@ -73,18 +73,47 @@
                 </div>
 
                 <div class="form-group">
-                    <label for="medicine_id">Medicine</label>
-                    <select id="medicine_id" name="medicine_id" required>
+                    <label for="medicine_choice">Medicine</label>
+                    <select id="medicine_choice" name="medicine_choice" required>
                         <option value="">-- Select Medicine --</option>
+                        <optgroup label="Basic medicines">
+                            @foreach($basicMedicines as $value => $label)
+                                <option value="{{ $value }}" {{ old('medicine_choice') === $value ? 'selected' : '' }}>
+                                    {{ $label }}
+                                </option>
+                            @endforeach
+                        </optgroup>
+                        @if($medicines->isNotEmpty())
+                            <optgroup label="Health center catalog">
                         @foreach($medicines as $medicine)
-                            <option value="{{ $medicine->id }}" {{ old('medicine_id') == $medicine->id ? 'selected' : '' }}>
+                            <option value="{{ $medicine->id }}" {{ old('medicine_choice') == (string) $medicine->id ? 'selected' : '' }}>
                                 {{ $medicine->name }} - {{ $medicine->strength }}
                             </option>
                         @endforeach
+                            </optgroup>
+                        @endif
+                        <option value="other" {{ old('medicine_choice') === 'other' ? 'selected' : '' }}>
+                            Other - enter medicine manually
+                        </option>
                     </select>
-                    @error('medicine_id')
+                    @error('medicine_choice')
                         <small class="text-danger">{{ $message }}</small>
                     @enderror
+                    <div id="other-medicine-field" class="form-group" @if(old('medicine_choice') !== 'other') hidden @endif>
+                        <label for="other_medicine_name">Medicine name</label>
+                        <input
+                            type="text"
+                            id="other_medicine_name"
+                            name="other_medicine_name"
+                            value="{{ old('other_medicine_name') }}"
+                            maxlength="255"
+                            placeholder="Enter the medicine name"
+                            @if(old('medicine_choice') === 'other') required @endif
+                        >
+                        @error('other_medicine_name')
+                            <small class="text-danger">{{ $message }}</small>
+                        @enderror
+                    </div>
                 </div>
 
                 <div class="form-group">
@@ -143,5 +172,20 @@
         </div>
     </form>
 </div>
+
+<script>
+    const medicineChoice = document.getElementById('medicine_choice');
+    const otherMedicineField = document.getElementById('other-medicine-field');
+    const otherMedicineName = document.getElementById('other_medicine_name');
+
+    function toggleOtherMedicineField() {
+        const isOther = medicineChoice.value === 'other';
+        otherMedicineField.hidden = !isOther;
+        otherMedicineName.required = isOther;
+    }
+
+    medicineChoice.addEventListener('change', toggleOtherMedicineField);
+    toggleOtherMedicineField();
+</script>
 
 @endsection

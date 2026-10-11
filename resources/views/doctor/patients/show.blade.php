@@ -306,7 +306,7 @@
                                     <div class="patient-prescription-item">
 
                                         <strong>
-                                            {{ $item->medicine_name ?? $item->name ?? 'Medicine' }}
+                                            {{ $item->display_name }}
                                         </strong>
 
                                         <div class="patient-prescription-details">

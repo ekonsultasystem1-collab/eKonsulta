@@ -88,7 +88,7 @@
                 <div class="prescription-medicine">
 
                     <h3>
-                        {{ $item->medicine->name ?? 'Medicine' }}
+                        {{ $item->display_name }}
                     </h3>
 
                     @if($item->medicine)
