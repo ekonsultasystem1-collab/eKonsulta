@@ -6,14 +6,33 @@
 
 @section('content')
 
+@php
+    $upcomingSchedules = $schedules->filter(function ($schedule) {
+        if ($schedule->schedule_date->isFuture()) {
+            return true;
+        }
+
+        return $schedule->schedule_date->isToday()
+            && $schedule->appointment_time->format('H:i') >= now()->format('H:i');
+    });
+    $pastSchedules = $schedules->filter(
+        fn ($schedule) => !$schedule->schedule_date->isFuture()
+            && !(
+                $schedule->schedule_date->isToday()
+                && $schedule->appointment_time->format('H:i') >= now()->format('H:i')
+            )
+    )->sortByDesc(fn ($schedule) => $schedule->schedule_date->format('Y-m-d') . ' ' . $schedule->appointment_time->format('H:i'));
+@endphp
+
 <div class="page-header">
     <div>
+        <span class="page-eyebrow">STAFF WORKSPACE</span>
         <h1>Appointment Schedules</h1>
-        <p>Manage available consultation schedules and appointment capacity.</p>
+        <p>Create and review patient booking slots for your health center.</p>
     </div>
 
-    <a href="{{ route('staff.appointment-schedules.create') }}" class="btn btn-primary">
-        Create Schedule
+    <a href="{{ route('staff.appointment-schedules.create') }}" class="primary-button schedule-create-action">
+        <span aria-hidden="true">+</span> Create schedules
     </a>
 </div>
 
@@ -29,68 +48,202 @@
     </div>
 @endif
 
-<div class="card">
+<section class="schedule-overview" aria-label="Schedule overview">
+    <div>
+        <span>Total schedules</span>
+        <strong>{{ $schedules->count() }}</strong>
+    </div>
+    <div>
+        <span>Upcoming schedules</span>
+        <strong>{{ $upcomingSchedules->count() }}</strong>
+    </div>
+    <div>
+        <span>Active bookings</span>
+        <strong>{{ $schedules->sum('active_appointments_count') }}</strong>
+    </div>
+</section>
+
+<div class="card schedule-list-card">
     <div class="card-header">
-        <h2>Available Schedules</h2>
+        <div>
+            <h2>Manage booking slots</h2>
+            <p>Review upcoming slots first. Past slots remain below for reference.</p>
+        </div>
     </div>
 
     <div class="card-body">
         @if($schedules->count())
-            <x-list-search target="staff-schedule-list" placeholder="Search health center, date, or time..." label="Search appointment schedules" />
+            <div class="schedule-list-guidance">
+                <span class="schedule-guidance-icon" aria-hidden="true">i</span>
+                <p><strong>Availability</strong> shows remaining places. Slots with active bookings are protected from deletion.</p>
+            </div>
 
-            <div class="table-responsive">
-                <table class="data-table">
-                    <thead>
-                        <tr>
-                            <th>Health Center</th>
-                            <th>Date</th>
-                            <th>Time</th>
-                            <th>Capacity</th>
-                            <th>Booked</th>
-                            <th>Available</th>
-                            <th>Action</th>
-                        </tr>
-                    </thead>
+            <x-list-search target="staff-schedule-list" placeholder="Search date, service, doctor, or health center..." label="Search appointment schedules" />
 
-                    <tbody id="staff-schedule-list">
-                        @foreach($schedules as $schedule)
-                            @php
-                                $booked = (int) $schedule->active_appointments_count;
-                                $available = max($schedule->capacity - $booked, 0);
-                            @endphp
+            <div class="schedule-groups" id="staff-schedule-list">
+                @if($upcomingSchedules->isNotEmpty())
+                    <section class="schedule-group" data-search-group aria-labelledby="upcoming-schedules-heading">
+                        <div class="schedule-group-heading">
+                            <div>
+                                <h3 id="upcoming-schedules-heading">Upcoming schedules</h3>
+                                <p>Slots taking place later today or on a future date.</p>
+                            </div>
+                            <span>{{ $upcomingSchedules->count() }}</span>
+                        </div>
+                        <div class="schedule-card-list">
+                            @foreach($upcomingSchedules as $schedule)
+                    @php
+                        $booked = (int) $schedule->active_appointments_count;
+                        $available = max($schedule->capacity - $booked, 0);
+                        $occupancy = $schedule->capacity > 0
+                            ? min(($booked / $schedule->capacity) * 100, 100)
+                            : 0;
+                    @endphp
 
-                            <tr data-search-item>
-                                <td>{{ $schedule->healthCenter->name }}</td>
-                                <td>{{ $schedule->schedule_date->format('M d, Y') }}</td>
-                                <td>{{ $schedule->appointment_time->format('h:i A') }}</td>
-                                <td>{{ $schedule->capacity }}</td>
-                                <td>{{ $booked }}</td>
-                                <td>
-                                    <span class="pill {{ $available === 0 ? 'pill--red' : 'pill--green' }}">
-                                        {{ $available }}
-                                    </span>
-                                </td>
-                                <td>
-                                    @if($booked === 0)
-                                        <form
-                                            method="POST"
-                                            action="{{ route('staff.appointment-schedules.destroy', $schedule) }}"
-                                            onsubmit="return confirm('Are you sure you want to delete this schedule?');"
-                                        >
-                                            @csrf
-                                            @method('DELETE')
-                                            <button type="submit" class="btn btn-danger btn-sm">
-                                                Delete
-                                            </button>
-                                        </form>
-                                    @else
-                                        <span class="text-muted">Has appointments</span>
-                                    @endif
-                                </td>
-                            </tr>
-                        @endforeach
-                    </tbody>
-                </table>
+                    <article class="schedule-card" data-search-item>
+                        <div class="schedule-card-date">
+                            <span>{{ $schedule->schedule_date->format('D') }}</span>
+                            <strong>{{ $schedule->schedule_date->format('d') }}</strong>
+                            <span>{{ $schedule->schedule_date->format('M Y') }}</span>
+                        </div>
+
+                        <div class="schedule-card-main">
+                            <div class="schedule-card-heading">
+                                <div>
+                                    <span class="schedule-card-eyebrow">{{ $schedule->healthCenter->name }}</span>
+                                    <h3>{{ $schedule->appointment_time->format('h:i A') }}</h3>
+                                    <div class="schedule-card-details">
+                                        <span><strong>Service</strong> {{ $schedule->service->name ?? 'Not specified' }}</span>
+                                        <span><strong>Doctor</strong> {{ $schedule->doctor?->user?->name ?? 'Not assigned' }}</span>
+                                    </div>
+                                </div>
+                                <span class="schedule-availability {{ $available === 0 ? 'is-full' : 'is-open' }}">
+                                    {{ $available === 0 ? 'Fully booked' : $available . ' ' . \Illuminate\Support\Str::plural('place', $available) . ' left' }}
+                                </span>
+                            </div>
+
+                            <div class="schedule-capacity">
+                                <div class="schedule-capacity-label">
+                                    <span>Booked places</span>
+                                    <strong>{{ $booked }} / {{ $schedule->capacity }}</strong>
+                                </div>
+                                <div class="schedule-capacity-track" role="progressbar" aria-label="Booked places for {{ $schedule->service->name ?? 'schedule' }} on {{ $schedule->schedule_date->format('F j, Y') }}" aria-valuemin="0" aria-valuemax="{{ $schedule->capacity }}" aria-valuenow="{{ min($booked, $schedule->capacity) }}">
+                                    <span style="width: {{ $occupancy }}%"></span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="schedule-card-action">
+                            @if($booked === 0)
+                                <form
+                                    method="POST"
+                                    action="{{ route('staff.appointment-schedules.destroy', $schedule) }}"
+                                    data-confirm="This empty schedule slot will be removed and can no longer be booked."
+                                    data-confirm-title="Delete this schedule?"
+                                    data-confirm-ok="Delete schedule"
+                                    data-confirm-cancel="Keep schedule"
+                                    data-confirm-icon="warning"
+                                >
+                                    @csrf
+                                    @method('DELETE')
+                                    <button type="submit" class="schedule-delete-button">
+                                        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M10 11v6m4-6v6M5 7l1 13h12l1-13M9 7V4h6v3"/></svg>
+                                        <span>Delete schedule</span>
+                                    </button>
+                                </form>
+                            @else
+                                <span class="schedule-protected-label" title="A schedule with active bookings cannot be deleted">
+                                    <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="10" width="14" height="11" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/></svg>
+                                    Bookings protect this slot
+                                </span>
+                            @endif
+                        </div>
+                    </article>
+                            @endforeach
+                        </div>
+                    </section>
+                @endif
+
+                @if($pastSchedules->isNotEmpty())
+                    <section class="schedule-group schedule-group-past" data-search-group aria-labelledby="past-schedules-heading">
+                        <div class="schedule-group-heading">
+                            <div>
+                                <h3 id="past-schedules-heading">Past schedules</h3>
+                                <p>Previous slots are kept here for reference.</p>
+                            </div>
+                            <span>{{ $pastSchedules->count() }}</span>
+                        </div>
+                        <div class="schedule-card-list">
+                            @foreach($pastSchedules as $schedule)
+                                @php
+                                    $booked = (int) $schedule->active_appointments_count;
+                                    $available = max($schedule->capacity - $booked, 0);
+                                    $occupancy = $schedule->capacity > 0
+                                        ? min(($booked / $schedule->capacity) * 100, 100)
+                                        : 0;
+                                @endphp
+
+                                <article class="schedule-card schedule-card-past" data-search-item>
+                                    <div class="schedule-card-date">
+                                        <span>{{ $schedule->schedule_date->format('D') }}</span>
+                                        <strong>{{ $schedule->schedule_date->format('d') }}</strong>
+                                        <span>{{ $schedule->schedule_date->format('M Y') }}</span>
+                                    </div>
+
+                                    <div class="schedule-card-main">
+                                        <div class="schedule-card-heading">
+                                            <div>
+                                                <span class="schedule-card-eyebrow">{{ $schedule->healthCenter->name }}</span>
+                                                <h3>{{ $schedule->appointment_time->format('h:i A') }}</h3>
+                                                <div class="schedule-card-details">
+                                                    <span><strong>Service</strong> {{ $schedule->service->name ?? 'Not specified' }}</span>
+                                                    <span><strong>Doctor</strong> {{ $schedule->doctor?->user?->name ?? 'Not assigned' }}</span>
+                                                </div>
+                                            </div>
+                                            <span class="schedule-availability is-past">Past slot</span>
+                                        </div>
+
+                                        <div class="schedule-capacity">
+                                            <div class="schedule-capacity-label">
+                                                <span>Active bookings</span>
+                                                <strong>{{ $booked }} / {{ $schedule->capacity }}</strong>
+                                            </div>
+                                            <div class="schedule-capacity-track" role="progressbar" aria-label="Active bookings for {{ $schedule->service->name ?? 'schedule' }} on {{ $schedule->schedule_date->format('F j, Y') }}" aria-valuemin="0" aria-valuemax="{{ $schedule->capacity }}" aria-valuenow="{{ min($booked, $schedule->capacity) }}">
+                                                <span style="width: {{ $occupancy }}%"></span>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="schedule-card-action">
+                                        @if($booked === 0)
+                                            <form
+                                                method="POST"
+                                                action="{{ route('staff.appointment-schedules.destroy', $schedule) }}"
+                                                data-confirm="This past schedule slot will be permanently removed."
+                                                data-confirm-title="Delete this past schedule?"
+                                                data-confirm-ok="Delete schedule"
+                                                data-confirm-cancel="Keep schedule"
+                                                data-confirm-icon="warning"
+                                            >
+                                                @csrf
+                                                @method('DELETE')
+                                                <button type="submit" class="schedule-delete-button">
+                                                    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M10 11v6m4-6v6M5 7l1 13h12l1-13M9 7V4h6v3"/></svg>
+                                                    <span>Delete schedule</span>
+                                                </button>
+                                            </form>
+                                        @else
+                                            <span class="schedule-protected-label" title="A schedule with active bookings cannot be deleted">
+                                                <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="10" width="14" height="11" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/></svg>
+                                                Bookings protect this slot
+                                            </span>
+                                        @endif
+                                    </div>
+                                </article>
+                            @endforeach
+                        </div>
+                    </section>
+                @endif
             </div>
         @else
             <div class="empty-state">

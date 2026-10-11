@@ -33,11 +33,32 @@
         </div>
 
         <div>
-            <h1>e-Konsulta</h1>
+            <h1>E Konsulta</h1>
             <span>City Health Office &bull; Taguig</span>
         </div>
 
     </div>
+
+    @php
+        $quickActions = [
+            'patient' => [
+                ['route' => 'patient.appointments.create', 'label' => 'Book visit', 'icon' => 'book'],
+                ['route' => 'patient.prescriptions.index', 'label' => 'Prescriptions', 'icon' => 'pill'],
+            ],
+            'doctor' => [
+                ['route' => 'doctor.appointments.index', 'label' => 'Today', 'icon' => 'calendar'],
+                ['route' => 'doctor.prescriptions.index', 'label' => 'Prescriptions', 'icon' => 'pill'],
+            ],
+            'staff' => [
+                ['route' => 'staff.announcements.create', 'label' => 'Create notice', 'icon' => 'bell'],
+                ['route' => 'staff.appointments.index', 'label' => 'Review requests', 'icon' => 'calendar'],
+            ],
+            'admin' => [
+                ['route' => 'admin.announcements.create', 'label' => 'Create notice', 'icon' => 'bell'],
+                ['route' => 'admin.doctors.index', 'label' => 'Manage doctors', 'icon' => 'steth'],
+            ],
+        ];
+    @endphp
 
     <nav class="sidebar-navigation">
 
@@ -308,6 +329,48 @@
                 <span>Activity Logs</span>
             </a>
 
+        @endif
+
+        @if(auth()->user()->isPatient())
+            <div class="nav-section nav-section--spacer">
+                <span>Quick access</span>
+            </div>
+            @foreach($quickActions['patient'] as $action)
+                <a href="{{ route($action['route']) }}" class="nav-quick-action {{ request()->routeIs(str_replace('.index', '.*', $action['route'])) ? 'is-active' : '' }}">
+                    <span>{!! $icons[$action['icon']] !!}</span>
+                    <span>{{ $action['label'] }}</span>
+                </a>
+            @endforeach
+        @elseif(auth()->user()->isDoctor())
+            <div class="nav-section nav-section--spacer">
+                <span>Quick access</span>
+            </div>
+            @foreach($quickActions['doctor'] as $action)
+                <a href="{{ route($action['route']) }}" class="nav-quick-action {{ request()->routeIs(str_replace('.index', '.*', $action['route'])) ? 'is-active' : '' }}">
+                    <span>{!! $icons[$action['icon']] !!}</span>
+                    <span>{{ $action['label'] }}</span>
+                </a>
+            @endforeach
+        @elseif(auth()->user()->isStaff())
+            <div class="nav-section nav-section--spacer">
+                <span>Quick access</span>
+            </div>
+            @foreach($quickActions['staff'] as $action)
+                <a href="{{ route($action['route']) }}" class="nav-quick-action {{ request()->routeIs(str_replace('.create', '.*', $action['route'])) || request()->routeIs(str_replace('.index', '.*', $action['route'])) ? 'is-active' : '' }}">
+                    <span>{!! $icons[$action['icon']] !!}</span>
+                    <span>{{ $action['label'] }}</span>
+                </a>
+            @endforeach
+        @elseif(auth()->user()->isAdmin())
+            <div class="nav-section nav-section--spacer">
+                <span>Quick access</span>
+            </div>
+            @foreach($quickActions['admin'] as $action)
+                <a href="{{ route($action['route']) }}" class="nav-quick-action {{ request()->routeIs(str_replace('.create', '.*', $action['route'])) || request()->routeIs(str_replace('.index', '.*', $action['route'])) ? 'is-active' : '' }}">
+                    <span>{!! $icons[$action['icon']] !!}</span>
+                    <span>{{ $action['label'] }}</span>
+                </a>
+            @endforeach
         @endif
 
     </nav>

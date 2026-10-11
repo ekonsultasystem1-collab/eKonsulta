@@ -153,6 +153,11 @@
         method="POST"
         action="{{ route('admin.health-centers.toggle-status', $healthCenter) }}"
         class="admin-health-center-status-form"
+        data-confirm="Changing this health center's status may affect services and appointment booking."
+        data-confirm-title="{{ $healthCenter->status === 'active' ? 'Deactivate health center?' : 'Activate health center?' }}"
+        data-confirm-ok="{{ $healthCenter->status === 'active' ? 'Deactivate' : 'Activate' }}"
+        data-confirm-cancel="Cancel"
+        data-confirm-icon="warning"
     >
 
         @csrf
@@ -169,7 +174,6 @@
     <form
         method="POST"
         action="{{ route('admin.health-centers.destroy', $healthCenter) }}"
-        data-confirm
         data-confirm-title="Delete this health center?"
         data-confirm="Deletion is only allowed when no records, services, or announcements are linked. Otherwise, deactivate the center instead."
         data-confirm-ok="Delete center"

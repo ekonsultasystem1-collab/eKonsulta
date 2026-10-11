@@ -29,12 +29,12 @@
 
             <div class="form-grid">
                 <div class="form-field full-width">
-                    <label for="title">Title</label>
-                    <input id="title" name="title" type="text" value="{{ old('title') }}" placeholder="FREE BLOOD PRESSURE SCREENING" required>
+                    <label for="title">Announcement title <span aria-hidden="true">*</span></label>
+                    <input id="title" name="title" type="text" value="{{ old('title') }}" placeholder="e.g. Free blood pressure screening" maxlength="255" autocomplete="off" required>
                 </div>
 
                 <div class="form-field">
-                    <label for="health_center_id">Target Health Center</label>
+                    <label for="health_center_id">Audience</label>
                     <select id="health_center_id" name="health_center_id">
                         <option value="">Global announcement</option>
                         @foreach($healthCenters as $healthCenter)
@@ -46,8 +46,9 @@
                 </div>
 
                 <div class="form-field">
-                    <label for="image">Announcement Image</label>
+                    <label for="image">Announcement image <span class="text-muted">(optional)</span></label>
                     <input id="image" name="image" type="file" accept="image/jpeg,image/png,image/webp">
+                    <small>Use a JPG, PNG, or WebP image up to 2 MB.</small>
                     <div class="announcement-upload-preview" data-upload-preview hidden>
                         <button type="button" class="announcement-image-preview-trigger" data-image-preview="" data-image-alt="" aria-label="Preview selected image">
                             <img alt="">
@@ -57,8 +58,9 @@
                 </div>
 
                 <div class="form-field full-width">
-                    <label for="content">Content</label>
-                    <textarea id="content" name="content" rows="8" required>{{ old('content') }}</textarea>
+                    <label for="content">Announcement details <span aria-hidden="true">*</span></label>
+                    <textarea id="content" name="content" rows="8" placeholder="Share the details patients and staff need to know." required>{{ old('content') }}</textarea>
+                    <small>Write clearly and include relevant dates, locations, and instructions.</small>
                 </div>
 
                 <div class="form-field checkbox-field">
@@ -66,6 +68,7 @@
                         <input type="checkbox" name="is_published" value="1" {{ old('is_published', true) ? 'checked' : '' }}>
                         Publish immediately
                     </label>
+                    <small>Published announcements are visible to the selected audience and may trigger notifications.</small>
                 </div>
             </div>
 

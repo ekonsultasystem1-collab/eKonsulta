@@ -15,6 +15,12 @@
         </div>
 
         <div style="display:flex; gap:10px; flex-wrap:wrap;">
+            <a
+                href="{{ route('patient.prescriptions.index') }}"
+                class="btn btn-secondary"
+            >
+                Back to Prescriptions
+            </a>
 
             <a
                 href="{{ route('patient.prescriptions.print', $prescription) }}"
@@ -39,7 +45,7 @@
         <div class="prescription-header">
 
             <h2>CITY HEALTH OFFICE</h2>
-            <h3>E-KONSULTA</h3>
+            <h3>E Konsulta</h3>
             <p>Electronic Prescription</p>
 
         </div>
@@ -145,15 +151,20 @@
 
         @endif
 
+        @php
+            $doctorServices = $prescription->doctor?->services?->pluck('name')->filter()->all() ?? [];
+            $doctorDepartment = $doctorServices ? implode(', ', $doctorServices) : ($prescription->doctor?->specialization ?? 'Medical Doctor');
+        @endphp
+
         <div class="prescription-signature">
 
             <div class="signature-line"></div>
 
             <strong>
-                Dr. {{ $prescription->doctor->user->name ?? 'Physician' }}
+                Dr. {{ $prescription->doctor->user->name ?? 'Doctor' }}
             </strong>
 
-            <span>Physician</span>
+            <span>{{ $doctorDepartment }}</span>
 
             @if($prescription->doctor->license_number ?? null)
                 <span>

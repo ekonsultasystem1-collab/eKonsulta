@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
 
     <title>
-        E-Konsulta Prescription - {{ $prescription->prescription_number }}
+        E Konsulta Prescription - {{ $prescription->prescription_number }}
     </title>
 
     <style>
@@ -147,7 +147,7 @@
 
     <div class="header">
         <h1>CITY HEALTH OFFICE OF TAGUIG</h1>
-        <h2>e-Konsulta</h2>
+        <h2>E Konsulta</h2>
         <p>Electronic Prescription</p>
     </div>
 
@@ -269,16 +269,21 @@
 
     @endif
 
+    @php
+        $doctorServices = $prescription->doctor?->services?->pluck('name')->filter()->all() ?? [];
+        $doctorDepartment = $doctorServices ? implode(', ', $doctorServices) : ($prescription->doctor?->specialization ?? 'Medical Doctor');
+    @endphp
+
     <div class="signature">
 
         <div class="signature-line"></div>
 
         <div class="signature-name">
-            Dr. {{ $prescription->doctor->user->name ?? 'Physician' }}
+            Dr. {{ $prescription->doctor->user->name ?? 'Doctor' }}
         </div>
 
         <div class="signature-role">
-            Physician
+            {{ $doctorDepartment }}
         </div>
 
         @if($prescription->doctor->license_number ?? null)
@@ -293,7 +298,7 @@
     </div>
 
     <div class="footer">
-        City Health Office of Taguig • e-Konsulta
+        City Health Office of Taguig â€¢ E Konsulta
     </div>
 
 </body>

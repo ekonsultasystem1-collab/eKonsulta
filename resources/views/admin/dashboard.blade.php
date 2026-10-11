@@ -12,7 +12,7 @@
 
     <div>
         <span class="welcome-label">
-            e-Konsulta Administration
+            E Konsulta Administration
         </span>
 
         <h1>

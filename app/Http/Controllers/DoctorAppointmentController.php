@@ -18,12 +18,19 @@ class DoctorAppointmentController extends Controller
             abort(403, 'Doctor record not found.');
         }
 
+        $now = now();
+        $today = $now->toDateString();
+
         $appointments = Appointment::with([
             'patient.user',
             'healthCenter',
         ])
             ->where('doctor_id', $doctor->id)
             ->whereIn('status', ['approved', 'completed'])
+            ->orderByRaw(
+                'CASE WHEN status = ? AND (appointment_date > ? OR (appointment_date = ? AND appointment_time >= ?)) THEN 0 ELSE 1 END',
+                ['approved', $today, $today, $now->format('H:i:s')]
+            )
             ->orderBy('appointment_date')
             ->orderBy('appointment_time')
             ->get();

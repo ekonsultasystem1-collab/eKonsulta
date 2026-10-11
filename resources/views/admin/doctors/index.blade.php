@@ -10,7 +10,7 @@
     <div class="card-header">
         <div>
             <h3>All Doctors</h3>
-            <p>Manage registered e-Konsulta doctors</p>
+            <p>Manage registered E Konsulta doctors</p>
         </div>
 
         <div class="admin-doctor-header-actions">

@@ -6,7 +6,7 @@
 
 @section('content')
 
-<div class="dashboard-card">
+<div class="dashboard-card clinical-workspace staff-prescription-detail">
 
     <div class="card-header">
 
@@ -26,7 +26,7 @@
 
     @if(session('success'))
 
-        <div class="alert-success">
+        <div class="alert alert-success" role="status">
             {{ session('success') }}
         </div>
 
@@ -34,7 +34,7 @@
 
     @if(session('error'))
 
-        <div class="alert-error">
+        <div class="alert alert-danger" role="alert">
             {{ session('error') }}
         </div>
 
@@ -257,11 +257,16 @@
 
     @if($prescription->status === 'active')
 
-        <div style="margin-top: 20px;">
+        <div class="form-actions prescription-release-actions">
 
             <form
                 action="{{ route('staff.prescriptions.release', $prescription) }}"
                 method="POST"
+                data-confirm="Confirm that the listed medicine has been handed to the patient."
+                data-confirm-title="Release medicine?"
+                data-confirm-ok="Release medicine"
+                data-confirm-cancel="Review again"
+                data-confirm-icon="warning"
             >
 
                 @csrf
@@ -270,7 +275,6 @@
                 <button
                     type="submit"
                     class="primary-button"
-                    onclick="return confirm('Are you sure you want to release the medicine for this prescription?')"
                 >
                     Release Medicine
                 </button>
@@ -281,7 +285,7 @@
 
     @else
 
-        <div style="margin-top: 20px;">
+        <div class="prescription-release-status">
 
             <p>
                 <strong>Medicine has already been released.</strong>

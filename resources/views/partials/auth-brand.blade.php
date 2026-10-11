@@ -1,5 +1,5 @@
 {{-- NEW FILE: shared brand panel used by login + register. Purely visual. --}}
-<aside class="ek-auth-brand" aria-label="e-Konsulta">
+<aside class="ek-auth-brand" aria-label="E Konsulta">
 
     <div class="ek-brand-content">
 
@@ -11,7 +11,7 @@
 
         <h1 class="ek-wordmark">
             <span>TAGUIG</span>
-            <span class="ek-wordmark-red">e-Konsulta</span>
+            <span class="ek-wordmark-red">E Konsulta</span>
         </h1>
 
         <p class="ek-brand-sub">

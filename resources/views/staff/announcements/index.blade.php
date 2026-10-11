@@ -15,6 +15,18 @@
             </a>
         </section>
 
+        @if(session('success'))
+            <div class="alert alert-success" role="status">{{ session('success') }}</div>
+        @endif
+
+        @if(session('error'))
+            <div class="alert alert-danger" role="alert">{{ session('error') }}</div>
+        @endif
+
+        <nav class="announcement-page-navigation" aria-label="Announcement navigation">
+            <a href="{{ route('staff.dashboard') }}" class="secondary-button">Back to Dashboard</a>
+        </nav>
+
         <div class="announcement-management-heading">
             <div>
                 <h3>All announcements</h3>
@@ -59,8 +71,12 @@
                             <h4>{{ $announcement->title }}</h4>
                             <p>{{ \Illuminate\Support\Str::limit(strip_tags($announcement->content), 150) }}</p>
                             <small>Created by {{ $announcement->creator?->name ?? 'System' }}</small>
+                            <a class="announcement-view-link" href="{{ route('staff.announcements.show', $announcement) }}">
+                                View full announcement
+                            </a>
                         </div>
                         <div class="announcement-management-actions">
+                            <a href="{{ route('staff.announcements.show', $announcement) }}" class="secondary-button secondary-button--small">View</a>
                             <a href="{{ route('staff.announcements.edit', $announcement) }}" class="secondary-button secondary-button--small">Edit</a>
                             <form method="POST" action="{{ route('staff.announcements.toggle-status', $announcement) }}">
                                 @csrf

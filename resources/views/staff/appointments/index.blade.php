@@ -6,11 +6,12 @@
 
 @section('content')
 
-<div class="dashboard-card">
+<div class="dashboard-card appointment-list-page">
 
     <div class="card-header">
 
         <div>
+            <span class="page-eyebrow">FRONT DESK</span>
             <h3>All Appointments</h3>
             <p>Manage and monitor patient appointments</p>
         </div>
@@ -20,6 +21,14 @@
         </a>
 
     </div>
+
+    @if(session('success'))
+        <div class="alert alert-success" role="status">{{ session('success') }}</div>
+    @endif
+
+    @if(session('error'))
+        <div class="alert alert-danger" role="alert">{{ session('error') }}</div>
+    @endif
 
     @if($appointments->count())
 
@@ -43,83 +52,55 @@
 
                     </div>
 
-                    <div class="appointment-details">
+                    <div class="appointment-details appointment-record-content">
+                        <div class="appointment-record-heading">
+                            <div>
+                                <span class="appointment-record-eyebrow">Patient appointment</span>
+                                <h4>{{ $appointment->patient?->user?->name ?? 'Patient' }}</h4>
+                                <p class="appointment-record-time">
+                                    {{ $appointment->appointment_date->format('F j, Y') }}
+                                    · {{ $appointment->appointment_time->format('g:i A') }}
+                                    @if($appointment->patient?->patient_number)
+                                        · {{ $appointment->patient->patient_number }}
+                                    @endif
+                                </p>
+                            </div>
+                            <span class="appointment-status status-{{ strtolower($appointment->status) }}">
+                                {{ $appointment->status === 'approved' ? 'Confirmed' : ucfirst($appointment->status) }}
+                            </span>
+                        </div>
 
-                        <h4>
-                            {{ $appointment->patient->user->name ?? 'Patient' }}
-                        </h4>
+                        <div class="appointment-record-facts">
+                            <div>
+                                <span>Assigned doctor</span>
+                                <strong>{{ $appointment->doctor?->user?->name ?? 'Not assigned' }}</strong>
+                            </div>
+                            <div>
+                                <span>Health center</span>
+                                <strong>{{ $appointment->healthCenter?->name ?? 'Not available' }}</strong>
+                            </div>
+                            <div>
+                                <span>Reason for visit</span>
+                                <strong>{{ \Illuminate\Support\Str::limit($appointment->reason ?: 'Not provided', 110) }}</strong>
+                            </div>
+                        </div>
 
-                        @if($appointment->patient)
-
-                            <p>
-                                <strong>Patient No:</strong>
-                                {{ $appointment->patient->patient_number }}
-                            </p>
-
-                        @endif
-
-                        @if($appointment->doctor && $appointment->doctor->user)
-
-                            <p>
-                                <strong>Doctor:</strong>
-                              {{ $appointment->doctor->user->name }}
-                            </p>
-
-                        @endif
-
-                        @if($appointment->healthCenter)
-
-                            <p>
-                                <strong>Health Center:</strong>
-                                🏥 {{ $appointment->healthCenter->name }}
-                            </p>
-
-                        @endif
-
-                        <p>
-                            <strong>Date:</strong>
-                            {{ $appointment->appointment_date->format('F j, Y') }}
-                        </p>
-
-                        <p>
-                            <strong>Time:</strong>
-                            {{ $appointment->appointment_time->format('g:i A') }}
-                        </p>
-
-                        <p>
-                            <strong>Status:</strong>
-                            {{ ucfirst($appointment->status) }}
-                        </p>
-
-                        @if($appointment->reason)
-
-                            <p>
-                                <strong>Reason:</strong>
-                                {{ $appointment->reason }}
-                            </p>
-
-                        @endif
-
-
-                        {{-- ACTIONS --}}
-
-                        <div style="margin-top: 15px;">
-
+                        <div class="appointment-record-actions">
                             <a
                                 href="{{ route('staff.appointments.show', $appointment) }}"
-                                class="primary-button"
+                                class="secondary-button"
                             >
-                                View Details
+                                View appointment
                             </a>
 
                             @if($appointment->status === 'pending')
                                 <form
                                     method="POST"
                                     action="{{ route('staff.appointments.approve', $appointment) }}"
-                                    style="display: inline-block; margin-left: 8px;"
                                     data-confirm="This appointment will be confirmed for the patient and made available to the assigned doctor."
                                     data-confirm-title="Approve appointment?"
                                     data-confirm-ok="Approve appointment"
+                                    data-confirm-cancel="Review appointment"
                                 >
                                     @csrf
                                     @method('PATCH')
@@ -130,12 +111,9 @@
                             @endif
 
                         </div>
-
                     </div>
 
                 </div>
-
-                <hr>
 
             @endforeach
 

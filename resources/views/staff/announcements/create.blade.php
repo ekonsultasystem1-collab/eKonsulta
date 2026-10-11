@@ -29,13 +29,14 @@
 
             <div class="form-grid">
                 <div class="form-field full-width">
-                    <label for="title">Title</label>
-                    <input id="title" name="title" type="text" value="{{ old('title') }}" required>
+                    <label for="title">Announcement title <span aria-hidden="true">*</span></label>
+                    <input id="title" name="title" type="text" value="{{ old('title') }}" placeholder="e.g. Clinic schedule update" maxlength="255" autocomplete="off" required>
                 </div>
 
                 <div class="form-field">
-                    <label for="image">Announcement Image</label>
+                    <label for="image">Announcement image <span class="text-muted">(optional)</span></label>
                     <input id="image" name="image" type="file" accept="image/jpeg,image/png,image/webp">
+                    <small>Use a JPG, PNG, or WebP image up to 2 MB.</small>
                     <div class="announcement-upload-preview" data-upload-preview hidden>
                         <button type="button" class="announcement-image-preview-trigger" data-image-preview="" data-image-alt="" aria-label="Preview selected image">
                             <img alt="">
@@ -45,8 +46,9 @@
                 </div>
 
                 <div class="form-field full-width">
-                    <label for="content">Content</label>
-                    <textarea id="content" name="content" rows="8" required>{{ old('content') }}</textarea>
+                    <label for="content">Announcement details <span aria-hidden="true">*</span></label>
+                    <textarea id="content" name="content" rows="8" placeholder="Share the details patients and staff need to know." required>{{ old('content') }}</textarea>
+                    <small>Include dates, locations, and any instructions patients should follow.</small>
                 </div>
 
                 <div class="form-field checkbox-field">
@@ -54,6 +56,7 @@
                         <input type="checkbox" name="is_published" value="1" {{ old('is_published', true) ? 'checked' : '' }}>
                         Publish immediately
                     </label>
+                    <small>Published announcements are visible to patients at your health center and may trigger notifications.</small>
                 </div>
             </div>
 

@@ -295,13 +295,13 @@ if (!$healthCenter) {
     */
 
     Mail::raw(
-        "Your e-Konsulta verification code is: {$otp}\n\n" .
+        "Your E Konsulta verification code is: {$otp}\n\n" .
         "This code will expire in 10 minutes.\n\n" .
         "If you did not request this registration, you may ignore this email.",
         function ($message) use ($validated) {
             $message
                 ->to($validated['email'])
-                ->subject('e-Konsulta Email Verification Code');
+                ->subject('E Konsulta Email Verification Code');
         }
     );
 
@@ -491,7 +491,7 @@ $user = User::create([
         ->route('patient.dashboard')
         ->with(
             'success',
-            'Registration successful. Welcome to e-Konsulta!'
+            'Registration successful. Welcome to E Konsulta!'
         );
 }
 
@@ -526,12 +526,12 @@ public function resendOtp(Request $request)
     ]);
 
     Mail::raw(
-        "Your new e-Konsulta verification code is: {$otp}\n\n" .
+        "Your new E Konsulta verification code is: {$otp}\n\n" .
         "This code will expire in 10 minutes.",
         function ($message) use ($email) {
             $message
                 ->to($email)
-                ->subject('e-Konsulta New Verification Code');
+                ->subject('E Konsulta New Verification Code');
         }
     );
 

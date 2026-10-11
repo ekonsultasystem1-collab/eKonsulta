@@ -13,7 +13,7 @@
 
         <div>
             <span class="welcome-label">
-                e-Konsulta Staff Portal
+                E Konsulta Staff Portal
             </span>
 
             <h1>
@@ -24,6 +24,11 @@
                 Manage appointments, patients, consultations, and
                 health-center services from one place.
             </p>
+
+            <div class="staff-focus-pill" aria-label="Health center">
+                <span class="staff-focus-dot" aria-hidden="true"></span>
+                Health center: {{ auth()->user()->staff?->healthCenter?->name ?? 'Not assigned' }}
+            </div>
 
             <div class="staff-welcome-actions">
                 <a href="{{ route('staff.appointment-schedules.index') }}" class="primary-button">

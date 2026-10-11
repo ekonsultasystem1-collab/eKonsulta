@@ -45,7 +45,7 @@ use App\Http\Controllers\AdminServiceController;
 
 
 Route::get('/', function () {
-    return redirect()->route('login');
+    return view('auth.login');
 });
 
 Route::get('/login', [AuthController::class, 'showLogin'])
@@ -255,6 +255,9 @@ Route::patch('/staff/{staff}/toggle-status', [AdminStaffController::class, 'togg
     Route::post('/announcements', [AdminAnnouncementController::class, 'store'])
         ->name('announcements.store');
 
+    Route::get('/announcements/{announcement}', [AdminAnnouncementController::class, 'show'])
+        ->name('announcements.show');
+
     Route::get('/announcements/{announcement}/edit', [AdminAnnouncementController::class, 'edit'])
         ->name('announcements.edit');
 
@@ -388,6 +391,9 @@ Route::get('/announcements/create', [StaffAnnouncementController::class, 'create
 Route::post('/announcements', [StaffAnnouncementController::class, 'store'])
     ->name('announcements.store');
 
+Route::get('/announcements/{announcement}', [StaffAnnouncementController::class, 'show'])
+    ->name('announcements.show');
+
 Route::get('/announcements/{announcement}/edit', [StaffAnnouncementController::class, 'edit'])
     ->name('announcements.edit');
 
@@ -474,6 +480,8 @@ Route::post('/appointments', [PatientAppointmentController::class, 'store'])
 
             Route::get('/medical-records', [PatientMedicalRecordController::class, 'index'])
     ->name('medical-records.index');
+    Route::get('/medical-records/{consultation}', [PatientMedicalRecordController::class, 'show'])
+    ->name('medical-records.show');
     Route::get('/prescriptions', [PatientPrescriptionController::class, 'index'])
     ->name('prescriptions.index');
 

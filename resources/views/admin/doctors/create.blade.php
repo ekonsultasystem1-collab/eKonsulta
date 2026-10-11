@@ -10,7 +10,7 @@
     <div class="card-header">
         <div>
             <h3>Add Doctor</h3>
-            <p>Create a new doctor account for the e-Konsulta system</p>
+            <p>Create a new doctor account for the E Konsulta system</p>
         </div>
 
         <a href="{{ route('admin.doctors.index') }}">

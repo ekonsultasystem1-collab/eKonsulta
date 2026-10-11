@@ -12,7 +12,7 @@
 
         <div>
             <h3>System Reports</h3>
-            <p>Overview of e-Konsulta system statistics</p>
+            <p>Overview of E Konsulta system statistics</p>
         </div>
 
         <a
@@ -36,7 +36,7 @@
 
             <div>
                 <h4>System Overview</h4>
-                <p>Current records across the e-Konsulta system</p>
+                <p>Current records across the E Konsulta system</p>
             </div>
         </div>
 

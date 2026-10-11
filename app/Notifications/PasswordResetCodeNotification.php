@@ -22,7 +22,7 @@ class PasswordResetCodeNotification extends Notification
     public function toMail(object $notifiable): MailMessage
     {
         return (new MailMessage)
-            ->subject('e-Konsulta Password Reset Code')
+            ->subject('E Konsulta Password Reset Code')
             ->greeting('Password reset request')
             ->line('Use this six-digit code to verify your identity:')
             ->line('**'.$this->code.'**')

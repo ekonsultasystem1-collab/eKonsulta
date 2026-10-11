@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
 
-    <title>@yield('title', 'Dashboard') | e-Konsulta</title>
+    <title>@yield('title', 'Dashboard') | E Konsulta</title>
     <link rel="icon" href="{{ asset('images/cross-badge.jpg') }}">
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -61,7 +61,7 @@
             </button>
 
             <div class="topbar-title">
-                <small>e-Konsulta</small>
+                <small>E Konsulta</small>
                 <h1>@yield('page-title', 'Dashboard')</h1>
             </div>
 
@@ -126,7 +126,7 @@
                             method="POST"
                             action="{{ route('logout') }}"
                             data-confirm="You will need to sign in again to access your account."
-                            data-confirm-title="Log out of e-Konsulta?"
+                            data-confirm-title="Log out of E Konsulta?"
                             data-confirm-ok="Log out"
                             data-confirm-cancel="Cancel"
                             data-confirm-icon="logout"
@@ -153,7 +153,7 @@
         </main>
 
         <footer class="app-footer">
-            &copy; {{ date('Y') }} City Health Office of Taguig &bull; e-Konsulta
+            &copy; {{ date('Y') }} City Health Office of Taguig &bull; E Konsulta
         </footer>
 
     </div>
@@ -170,7 +170,7 @@
         aria-labelledby="confirmTitle"
         aria-describedby="confirmMessage"
     >
-        <div class="modal-icon" aria-hidden="true">
+        <div class="modal-icon" id="confirmIcon" aria-hidden="true">
             <svg class="confirmation-icon-default" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
                 <circle cx="12" cy="12" r="9"></circle>
                 <path d="M9.8 9a2.3 2.3 0 1 1 3.9 1.7c-1.1.9-1.7 1.3-1.7 2.8"></path>

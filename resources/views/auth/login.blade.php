@@ -3,7 +3,7 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Login | e-Konsulta</title>
+    <title>Login | E Konsulta</title>
     <link rel="icon" href="{{ asset('images/cross-badge.jpg') }}">
    <link rel="preconnect" href="https://fonts.googleapis.com">
    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -15,7 +15,7 @@
 <main class="auth-page">
 
     {{-- Left: hero --}}
-    <section class="auth-hero" aria-label="About e-Konsulta">
+    <section class="auth-hero" aria-label="About E Konsulta">
 
         <div class="auth-hero-brand">
             <img
@@ -23,7 +23,7 @@
                 alt="City Health Office of Taguig seal"
             >
             <div>
-                <strong>e-Konsulta</strong>
+                <strong>E Konsulta</strong>
                 <span>City Health Office &bull; City of Taguig</span>
             </div>
         </div>
@@ -50,7 +50,7 @@
             >
 
             <h1>Welcome back</h1>
-            <p>Sign in to your e-Konsulta account.</p>
+            <p>Sign in to your E Konsulta account.</p>
 
             @if (session('status'))
                 <div class="alert alert-success" role="status">

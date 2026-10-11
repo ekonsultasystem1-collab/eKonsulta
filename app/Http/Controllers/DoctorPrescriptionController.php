@@ -27,6 +27,7 @@ class DoctorPrescriptionController extends Controller
         $prescriptions = Prescription::where('doctor_id', $doctor->id)
             ->with([
                 'patient.user',
+                'consultation',
                 'items.medicine',
             ])
             ->latest('prescription_date')

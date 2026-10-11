@@ -23,6 +23,14 @@ class StaffAnnouncementController extends Controller
         return view('staff.announcements.index', compact('announcements'));
     }
 
+    public function show(Announcement $announcement): View
+    {
+        $this->authorizeAnnouncement($announcement);
+        $announcement->load(['healthCenter', 'creator']);
+
+        return view('staff.announcements.show', compact('announcement'));
+    }
+
     public function create(): View
     {
         $healthCenter = $this->currentHealthCenter();

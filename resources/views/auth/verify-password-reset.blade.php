@@ -3,7 +3,7 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Verify Reset Code | e-Konsulta</title>
+    <title>Verify Reset Code | E Konsulta</title>
     <link rel="icon" href="{{ asset('images/cross-badge.jpg') }}">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -13,11 +13,11 @@
 <body>
 
 <main class="auth-page">
-    <section class="auth-hero" aria-label="About e-Konsulta">
+    <section class="auth-hero" aria-label="About E Konsulta">
         <div class="auth-hero-brand">
             <img src="{{ asset('images/cho-seal.jpg') }}" alt="City Health Office of Taguig seal">
             <div>
-                <strong>e-Konsulta</strong>
+                <strong>E Konsulta</strong>
                 <span>City Health Office &bull; City of Taguig</span>
             </div>
         </div>

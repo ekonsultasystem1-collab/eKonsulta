@@ -8,7 +8,7 @@
         content="width=device-width, initial-scale=1.0"
     >
 
-    <title>Verify Email - e-Konsulta</title>
+    <title>Verify Email - E Konsulta</title>
 
     <link rel="icon" href="{{ asset('images/cross-badge.jpg') }}">
 

@@ -11,7 +11,7 @@
 
         <div>
             <h3>All Staff</h3>
-            <p>Manage registered e-Konsulta staff members</p>
+            <p>Manage registered E Konsulta staff members</p>
         </div>
 
         <div>

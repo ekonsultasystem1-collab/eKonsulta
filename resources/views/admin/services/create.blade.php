@@ -12,7 +12,7 @@
 
         <div>
             <h3>Add Service</h3>
-            <p>Register a healthcare service for e-Konsulta</p>
+            <p>Register a healthcare service for E Konsulta</p>
         </div>
 
         <a href="{{ route('admin.services.index') }}">

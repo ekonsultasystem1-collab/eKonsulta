@@ -11,7 +11,7 @@
 
         <div>
             <h3>Add Staff</h3>
-            <p>Create a new staff account for the e-Konsulta system</p>
+            <p>Create a new staff account for the E Konsulta system</p>
         </div>
 
         <a

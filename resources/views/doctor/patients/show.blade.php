@@ -99,7 +99,7 @@
                                 </p>
                             </div>
 
-                            <span class="appointment-status">
+                            <span class="appointment-status status-{{ strtolower($appointment->status) }}">
                                 {{ ucfirst($appointment->status) }}
                             </span>
 

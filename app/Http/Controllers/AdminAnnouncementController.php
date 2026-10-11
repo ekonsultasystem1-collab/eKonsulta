@@ -20,6 +20,13 @@ class AdminAnnouncementController extends Controller
         return view('admin.announcements.index', compact('announcements'));
     }
 
+    public function show(Announcement $announcement): View
+    {
+        $announcement->load(['healthCenter', 'creator']);
+
+        return view('admin.announcements.show', compact('announcement'));
+    }
+
     public function create(): View
     {
         $healthCenters = HealthCenter::orderBy('name')->get();

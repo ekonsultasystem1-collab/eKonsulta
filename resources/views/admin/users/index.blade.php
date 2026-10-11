@@ -12,7 +12,7 @@
 
         <div>
             <h3>All Users</h3>
-            <p>Manage registered e-Konsulta system users</p>
+            <p>Manage registered E Konsulta system users</p>
         </div>
 
         <a href="{{ route('admin.dashboard') }}">

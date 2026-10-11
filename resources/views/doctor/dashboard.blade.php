@@ -12,7 +12,7 @@
 
         <div>
             <span class="welcome-label">
-                e-Konsulta Clinical Portal
+                E Konsulta Clinical Portal
             </span>
 
             <h1>
@@ -146,7 +146,7 @@
 
                                 @endif
 
-                                <span class="appointment-status">
+                                <span class="appointment-status status-{{ strtolower($appointment->status) }}">
                                     {{ ucfirst($appointment->status) }}
                                 </span>
 

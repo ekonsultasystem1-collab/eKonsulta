@@ -13,7 +13,7 @@
 
         <div>
             <span class="welcome-label">
-                e-Konsulta Patient Portal
+                E Konsulta Patient Portal
             </span>
 
             <h1>
@@ -125,19 +125,35 @@
 
                         @if($nextAppointment->doctor && $nextAppointment->doctor->user)
 
-                            <p>
+                            @php
+                                $doctorServiceNames = $nextAppointment->doctor->services
+                                    ->pluck('name')
+                                    ->filter()
+                                    ->take(2)
+                                    ->values()
+                                    ->all();
+                                $doctorServiceLabel = $doctorServiceNames
+                                    ? implode(' / ', $doctorServiceNames)
+                                    : ($nextAppointment->doctor->specialization ?? 'Medical Doctor');
+
+                                if ($nextAppointment->doctor->services->count() > 2) {
+                                    $doctorServiceLabel .= ' +';
+                                }
+
+                                if (mb_strlen($doctorServiceLabel) > 28) {
+                                    $doctorServiceLabel = mb_substr($doctorServiceLabel, 0, 25) . '…';
+                                }
+                            @endphp
+
+                            <p class="doctor-profile-line">
                                 👨‍⚕️
                                 {{ $nextAppointment->doctor->user->name }}
                             </p>
 
-                            @if($nextAppointment->doctor->specialization)
-
-                                <p>
-                                    🩺
-                                    {{ $nextAppointment->doctor->specialization }}
-                                </p>
-
-                            @endif
+                            <p class="doctor-service-line">
+                                🩺
+                                {{ $doctorServiceLabel }}
+                            </p>
 
                         @endif
 

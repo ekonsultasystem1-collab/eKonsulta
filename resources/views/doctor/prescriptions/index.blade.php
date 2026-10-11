@@ -10,6 +10,7 @@
 
 <div class="card-header">
     <div>
+        <span class="page-eyebrow">MEDICATION RECORDS</span>
         <h3>My Prescriptions</h3>
         <p>Prescriptions issued to your patients</p>
     </div>
@@ -53,7 +54,7 @@
 
                     </div>
 
-                    <span class="appointment-status">
+                    <span class="appointment-status status-{{ strtolower($prescription->status) }}">
                         {{ ucfirst($prescription->status) }}
                     </span>
 
@@ -77,83 +78,15 @@
 
                 </div>
 
-                @if($prescription->items->count())
-
-                    <div class="doctor-prescription-medicines">
-
-                        <div class="doctor-prescription-section-title">
-                            <span>MEDICATIONS</span>
-                            <strong>Prescribed Medicines</strong>
-                        </div>
-
-                        <div class="doctor-prescription-items">
-
-                            @foreach($prescription->items as $item)
-
-                                <div class="doctor-prescription-item">
-
-                                    <div class="doctor-prescription-medicine-name">
-                                        <strong>
-                                            {{ $item->medicine->name ?? 'Medicine' }}
-                                        </strong>
-                                    </div>
-
-                                    <div class="doctor-prescription-medicine-details">
-
-                                        <span>
-                                            <strong>Dosage:</strong>
-                                            {{ $item->dosage }}
-                                        </span>
-
-                                        <span>
-                                            <strong>Frequency:</strong>
-                                            {{ $item->frequency }}
-                                        </span>
-
-                                        <span>
-                                            <strong>Duration:</strong>
-                                            {{ $item->duration }}
-                                        </span>
-
-                                        <span>
-                                            <strong>Quantity:</strong>
-                                            {{ $item->quantity }}
-                                        </span>
-
-                                    </div>
-
-                                    @if($item->instructions)
-                                        <div class="doctor-prescription-item-instructions">
-                                            <strong>Instructions:</strong>
-                                            {{ $item->instructions }}
-                                        </div>
-                                    @endif
-
-                                </div>
-
-                            @endforeach
-
-                        </div>
-
-                    </div>
-
-                @endif
-
-                @if($prescription->instructions)
-
-                    <div class="doctor-prescription-instructions">
-
-                        <span>INSTRUCTIONS</span>
-
-                        <p>
-                            {{ $prescription->instructions }}
-                        </p>
-
-                    </div>
-
-                @endif
-
-                {{-- PRESCRIPTION ACTIONS --}}
+                <div class="doctor-prescription-summary">
+                    <span>
+                        {{ $prescription->items->count() }}
+                        {{ $prescription->items->count() === 1 ? 'medicine' : 'medicines' }}
+                    </span>
+                    @if($prescription->consultation?->diagnosis)
+                        <span>Diagnosis: {{ \Illuminate\Support\Str::limit($prescription->consultation->diagnosis, 100) }}</span>
+                    @endif
+                </div>
 
                 <div class="doctor-prescription-actions">
 
@@ -161,23 +94,7 @@
                         href="{{ route('doctor.prescriptions.show', $prescription) }}"
                         class="btn btn-primary"
                     >
-                        View Prescription
-                    </a>
-
-                    <a
-                        href="{{ route('doctor.prescriptions.download', $prescription) }}"
-                        class="btn btn-secondary"
-                    >
-                        Download PDF
-                    </a>
-
-                    <a
-                        href="{{ route('doctor.prescriptions.print', $prescription) }}"
-                        class="btn btn-secondary"
-                        target="_blank"
-                        rel="noopener"
-                    >
-                        Print
+                        View Full Prescription
                     </a>
 
                 </div>

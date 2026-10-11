@@ -48,6 +48,149 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
+    document.querySelectorAll('[data-password-toggle]').forEach((toggle) => {
+        if (!(toggle instanceof HTMLButtonElement)) {
+            return;
+        }
+
+        const targetId = toggle.dataset.target;
+        const input = targetId ? document.getElementById(targetId) : null;
+
+        if (!(input instanceof HTMLInputElement)) {
+            return;
+        }
+
+        const showLabel = toggle.dataset.showLabel || 'Show password';
+        const hideLabel = toggle.dataset.hideLabel || 'Hide password';
+        const showIcon = toggle.querySelector('[data-password-icon="show"]');
+        const hideIcon = toggle.querySelector('[data-password-icon="hide"]');
+
+        const syncPasswordState = () => {
+            const shouldShowPassword = input.type === 'password';
+
+            input.type = shouldShowPassword ? 'text' : 'password';
+            toggle.setAttribute('aria-label', shouldShowPassword ? hideLabel : showLabel);
+            toggle.setAttribute('aria-pressed', shouldShowPassword ? 'true' : 'false');
+            toggle.setAttribute('aria-expanded', shouldShowPassword ? 'true' : 'false');
+            toggle.title = shouldShowPassword ? hideLabel : showLabel;
+
+            if (showIcon instanceof SVGElement && hideIcon instanceof SVGElement) {
+                showIcon.hidden = shouldShowPassword;
+                hideIcon.hidden = !shouldShowPassword;
+            }
+        };
+
+        toggle.addEventListener('click', () => {
+            syncPasswordState();
+            input.focus();
+        });
+    });
+
+    const parseSortDate = (value) => {
+        if (!value || typeof value !== 'string') {
+            return Number.NaN;
+        }
+
+        const normalized = value.trim();
+        if (!normalized) {
+            return Number.NaN;
+        }
+
+        const directTimestamp = Date.parse(normalized);
+        if (!Number.isNaN(directTimestamp)) {
+            return directTimestamp;
+        }
+
+        const match = normalized.match(/\b(?:\d{4}-\d{2}-\d{2}|\d{4}\/\d{2}\/\d{2}|\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}|\d{1,2}\/\d{1,2}\/\d{4}|\d{1,2}-\d{1,2}-\d{4}|\d{1,2} [A-Za-z]{3,9} \d{4}|[A-Za-z]{3,9} \d{1,2}, \d{4}|\d{1,2} [A-Za-z]{3,9} \d{4} at \d{1,2}:\d{2} [AP]M|\d{1,2}:\d{2} [AP]M,? \d{1,2} [A-Za-z]{3,9} \d{4})\b/i);
+        if (!match) {
+            return Number.NaN;
+        }
+
+        return Date.parse(match[0]);
+    };
+
+    const getItemSortDate = (item) => {
+        const valueCandidates = [
+            item.dataset.sortDate,
+            item.getAttribute('data-sort-date'),
+            item.dataset.createdAt,
+            item.getAttribute('data-created-at'),
+            item.dataset.publishedAt,
+            item.getAttribute('data-published-at'),
+            item.dataset.date,
+            item.getAttribute('data-date'),
+            item.querySelector('time')?.dateTime,
+            item.querySelector('time')?.textContent,
+            item.querySelector('[data-sort-date]')?.dataset.sortDate,
+            item.querySelector('[data-created-at]')?.getAttribute('data-created-at'),
+            item.querySelector('[data-published-at]')?.getAttribute('data-published-at'),
+            item.querySelector('[data-date]')?.getAttribute('data-date')
+        ];
+
+        for (const candidate of valueCandidates) {
+            const parsed = parseSortDate(candidate || '');
+            if (!Number.isNaN(parsed)) {
+                return parsed;
+            }
+        }
+
+        const textMatch = item.textContent?.match(/\b(?:\d{4}-\d{2}-\d{2}|\d{4}\/\d{2}\/\d{2}|\d{1,2}\/\d{1,2}\/\d{4}|\d{1,2}-\d{1,2}-\d{4}|\d{1,2} [A-Za-z]{3,9} \d{4}|[A-Za-z]{3,9} \d{1,2}, \d{4}|\d{1,2} [A-Za-z]{3,9} \d{4} at \d{1,2}:\d{2} [AP]M)\b/i);
+        if (textMatch) {
+            return parseSortDate(textMatch[0]);
+        }
+
+        return Number.NaN;
+    };
+
+    const sortListItems = (list, mode = 'newest') => {
+        if (!(list instanceof HTMLElement)) {
+            return;
+        }
+
+        const sortValue = mode === 'oldest' ? 'oldest' : 'newest';
+
+        const sortCollection = (items) => {
+            items.sort((a, b) => {
+                const aValue = getItemSortDate(a);
+                const bValue = getItemSortDate(b);
+
+                if (Number.isNaN(aValue) && Number.isNaN(bValue)) {
+                    return 0;
+                }
+
+                if (Number.isNaN(aValue)) {
+                    return sortValue === 'newest' ? 1 : -1;
+                }
+
+                if (Number.isNaN(bValue)) {
+                    return sortValue === 'newest' ? -1 : 1;
+                }
+
+                return sortValue === 'newest'
+                    ? bValue - aValue
+                    : aValue - bValue;
+            });
+
+            items.forEach((item) => {
+                if (item.parentElement) {
+                    item.parentElement.appendChild(item);
+                }
+            });
+        };
+
+        const directItems = Array.from(list.children).filter((child) => child instanceof HTMLElement && child.matches('[data-search-item]'));
+        if (directItems.length) {
+            sortCollection(directItems);
+        }
+
+        list.querySelectorAll('[data-search-group]').forEach((group) => {
+            const items = Array.from(group.querySelectorAll('[data-search-item]'));
+            if (items.length > 1) {
+                sortCollection(items);
+            }
+        });
+    };
+
     document.querySelectorAll('[data-list-search-input]').forEach((input) => {
         if (!(input instanceof HTMLInputElement)) {
             return;
@@ -56,6 +199,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const targetId = input.dataset.listSearchTarget;
         const list = targetId ? document.getElementById(targetId) : null;
         const status = input.closest('.list-search')?.querySelector('[data-list-search-status]');
+        const sortSelect = input.closest('.list-search')?.querySelector('[data-list-sort-select]');
 
         if (!(list instanceof HTMLElement) || !(status instanceof HTMLElement)) {
             console.error('List search is missing its target list or status message.');
@@ -64,7 +208,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const items = Array.from(list.querySelectorAll('[data-search-item]'));
 
-        input.addEventListener('input', () => {
+        const applySearch = () => {
             const query = input.value.trim().toLocaleLowerCase();
             let visibleCount = 0;
 
@@ -87,7 +231,20 @@ document.addEventListener('DOMContentLoaded', () => {
             });
 
             status.hidden = query.length === 0 || visibleCount > 0;
-        });
+
+            if (sortSelect instanceof HTMLSelectElement) {
+                sortListItems(list, sortSelect.value);
+            }
+        };
+
+        input.addEventListener('input', applySearch);
+
+        if (sortSelect instanceof HTMLSelectElement) {
+            sortSelect.addEventListener('change', () => {
+                sortListItems(list, sortSelect.value);
+            });
+            sortListItems(list, sortSelect.value || sortSelect.dataset.defaultSort || 'newest');
+        }
     });
 
     const userMenu = document.getElementById('userMenu');

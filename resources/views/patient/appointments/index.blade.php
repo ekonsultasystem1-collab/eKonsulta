@@ -23,11 +23,12 @@
 
     {{-- Page Header --}}
 
-    <section class="dashboard-card">
+    <section class="dashboard-card appointment-list-page">
 
         <div class="card-header">
 
             <div>
+                <span class="page-eyebrow">CARE SCHEDULE</span>
                 <h3>My Appointments</h3>
 
                 <p>
@@ -74,94 +75,70 @@
 
                         {{-- Appointment Details --}}
 
-                        <div class="appointment-details">
+                        <div class="appointment-details appointment-record-content">
+                            <div class="appointment-record-heading">
+                                <div>
+                                    <span class="appointment-record-eyebrow">Appointment</span>
+                                    <h4>{{ $appointment->appointment_date->format('l, F j, Y') }}</h4>
+                                    <p class="appointment-record-time">{{ $appointment->appointment_time->format('g:i A') }}</p>
+                                </div>
+                                <span class="appointment-status status-{{ strtolower($appointment->status) }}">
+                                    {{ $appointment->status === 'approved' ? 'Confirmed' : ($appointment->status === 'pending' ? 'Awaiting confirmation' : ucfirst($appointment->status)) }}
+                                </span>
+                            </div>
 
-                            <h4>
-                                {{ \Carbon\Carbon::parse($appointment->appointment_date)->format('l, F j, Y') }}
-                            </h4>
+                            <div class="appointment-record-facts">
+                                <div>
+                                    <span>Doctor</span>
+                                    <strong>{{ $appointment->doctor?->user?->name ?? 'To be assigned' }}</strong>
+                                    @php
+                                        $doctorServiceNames = $appointment->doctor?->services
+                                            ? $appointment->doctor->services->pluck('name')->filter()->take(2)->values()->all()
+                                            : [];
+                                        $doctorServiceLabel = $doctorServiceNames
+                                            ? implode(' / ', $doctorServiceNames)
+                                            : ($appointment->doctor?->specialization ?? 'Medical Doctor');
 
-                            <p>
-                                🕐
-                                {{ \Carbon\Carbon::parse($appointment->appointment_time)->format('g:i A') }}
-                            </p>
+                                        if ($appointment->doctor?->services && $appointment->doctor->services->count() > 2) {
+                                            $doctorServiceLabel .= ' +';
+                                        }
 
-
-                            {{-- Doctor --}}
-
-                            @if($appointment->doctor && $appointment->doctor->user)
-
-                                <p>
-                                    👨‍⚕️
-                                    {{ $appointment->doctor->user->name }}
-                                </p>
-
-                                @if($appointment->doctor->specialization)
-
-                                    <p>
-                                        🩺
-                                        {{ $appointment->doctor->specialization }}
-                                    </p>
-
+                                        if (mb_strlen($doctorServiceLabel) > 28) {
+                                            $doctorServiceLabel = mb_substr($doctorServiceLabel, 0, 25) . '…';
+                                        }
+                                    @endphp
+                                    <small>{{ $doctorServiceLabel }}</small>
+                                </div>
+                                <div>
+                                    <span>Health center</span>
+                                    <strong>{{ $appointment->healthCenter?->name ?? 'Not available' }}</strong>
+                                </div>
+                                @if($appointment->reason)
+                                    <div>
+                                        <span>Reason for visit</span>
+                                        <strong>{{ \Illuminate\Support\Str::limit($appointment->reason, 110) }}</strong>
+                                    </div>
                                 @endif
-
-                            @endif
-
-
-                            {{-- Health Center --}}
-
-                            @if($appointment->healthCenter)
-
-                                <p>
-                                    🏥
-                                    {{ $appointment->healthCenter->name }}
-                                </p>
-
-                            @endif
-
-
-                            {{-- Reason --}}
-
-                            @if($appointment->reason)
-
-                                <p>
-                                    <strong>Reason:</strong>
-                                    {{ $appointment->reason }}
-                                </p>
-
-                            @endif
-
-
-                            {{-- Status --}}
-
-                            <span class="appointment-status status-{{ strtolower($appointment->status) }}">
-                                {{ $appointment->status === 'approved' ? 'Confirmed' : ($appointment->status === 'pending' ? 'Awaiting staff confirmation' : ucfirst($appointment->status)) }}
-                            </span>
-
-
-                            {{-- Cancel Button --}}
+                            </div>
 
                             @if($appointment->status === 'pending')
-
-                                <form
-                                    method="POST"
-                                    action="{{ route('patient.appointments.cancel', $appointment) }}"
-                                    style="margin-top: 15px;"
-                                    onsubmit="return confirm('Are you sure you want to cancel this appointment?');"
-                                >
-
-                                    @csrf
-
-                                    @method('PATCH')
-
-                                    <button
-                                        type="submit"
-                                        class="secondary-button btn-sm"
+                                <div class="appointment-record-actions">
+                                    <form
+                                        method="POST"
+                                        action="{{ route('patient.appointments.cancel', $appointment) }}"
+                                        data-confirm="Your pending appointment request will be cancelled."
+                                        data-confirm-title="Cancel this appointment?"
+                                        data-confirm-ok="Cancel appointment"
+                                        data-confirm-cancel="Keep appointment"
+                                        data-confirm-icon="warning"
                                     >
-                                        Cancel Appointment
-                                    </button>
-
-                                </form>
-
+                                        @csrf
+                                        @method('PATCH')
+                                        <button type="submit" class="secondary-button appointment-cancel-button">
+                                            Cancel appointment
+                                        </button>
+                                    </form>
+                                </div>
                             @endif
 
                         </div>

@@ -6,10 +6,11 @@
 
 @section('content')
 
-<div class="dashboard-card">
+<div class="dashboard-card doctor-consultation-list-page">
 
     <div class="card-header">
         <div>
+            <span class="page-eyebrow">CLINICAL RECORDS</span>
             <h3>My Consultations</h3>
             <p>Consultation records for your patients</p>
         </div>
@@ -61,87 +62,26 @@
 
                         </div>
 
-                        <div class="consultation-list-information">
+                        <div class="consultation-list-information consultation-list-summary">
+                            <div>
+                                <span>Date &amp; Time</span>
+                                <strong>{{ $consultation->consultation_date->format('M j, Y · g:i A') }}</strong>
+                            </div>
 
                             <div>
-                                <span>Date & Time</span>
+                                <span>Diagnosis</span>
                                 <strong>
-                                    {{ \Carbon\Carbon::parse($consultation->consultation_date)->format('F j, Y') }}
-                                    —
-                                    {{ \Carbon\Carbon::parse($consultation->consultation_date)->format('g:i A') }}
+                                    {{ $consultation->diagnosis
+                                        ? \Illuminate\Support\Str::limit($consultation->diagnosis, 110)
+                                        : 'Not recorded' }}
                                 </strong>
                             </div>
 
-                            @if($consultation->chief_complaint)
-                                <div>
-                                    <span>Chief Complaint</span>
-                                    <strong>
-                                        {{ $consultation->chief_complaint }}
-                                    </strong>
-                                </div>
-                            @endif
-
-                            @if($consultation->symptoms)
-                                <div>
-                                    <span>Symptoms</span>
-                                    <strong>
-                                        {{ $consultation->symptoms }}
-                                    </strong>
-                                </div>
-                            @endif
-
-                            @if($consultation->diagnosis)
-                                <div>
-                                    <span>Diagnosis</span>
-                                    <strong>
-                                        {{ $consultation->diagnosis }}
-                                    </strong>
-                                </div>
-                            @endif
-
-                            @if($consultation->treatment_plan)
-                                <div>
-                                    <span>Treatment Plan</span>
-                                    <strong>
-                                        {{ $consultation->treatment_plan }}
-                                    </strong>
-                                </div>
-                            @endif
-
-                            @if($consultation->appointment && $consultation->appointment->healthCenter)
-                                <div>
-                                    <span>Health Center</span>
-                                    <strong>
-                                        {{ $consultation->appointment->healthCenter->name }}
-                                    </strong>
-                                </div>
-                            @endif
-
-                            @if($consultation->prescriptions->count())
-                                <div>
-                                    <span>Prescription</span>
-                                    <strong>
-                                        {{ $consultation->prescriptions->count() }}
-                                    </strong>
-                                </div>
-                            @endif
-
-                        </div>
-
-                        @if($consultation->notes)
-
-                            <div class="consultation-list-information">
-
-                                <div>
-                                    <span>Additional Notes</span>
-                                    <strong>
-                                        {{ $consultation->notes }}
-                                    </strong>
-                                </div>
-
+                            <div>
+                                <span>Prescriptions</span>
+                                <strong>{{ $consultation->prescriptions->count() }}</strong>
                             </div>
-
-                        @endif
+                        </div>
 
                         <div class="consultation-list-action">
 

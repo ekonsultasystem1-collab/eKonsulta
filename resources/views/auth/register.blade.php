@@ -4,7 +4,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
 
-    <title>Register | e-Konsulta</title>
+    <title>Register | E Konsulta</title>
 
     <link rel="icon" href="{{ asset('images/cross-badge.jpg') }}">
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -453,6 +453,34 @@
         .register-button:hover {
             background: #083e6d;
 
+            transform: translateY(-1px);
+        }
+
+        .register-actions {
+            display: flex;
+            justify-content: center;
+            margin-top: 18px;
+        }
+
+        .register-cancel-button {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 40px;
+            padding: 10px 18px;
+            border: 1px solid #d9e1eb;
+            border-radius: 999px;
+            background: #fff;
+            color: #1f3350;
+            font-size: 12px;
+            font-weight: 700;
+            text-decoration: none;
+            transition: background .15s ease, border-color .15s ease, transform .15s ease;
+        }
+
+        .register-cancel-button:hover {
+            background: #f5f9ff;
+            border-color: #bfd0ea;
             transform: translateY(-1px);
         }
 
@@ -1140,7 +1168,7 @@
 
                 <div class="register-brand-name">
 
-                    <strong>e-Konsulta</strong>
+                    <strong>E Konsulta</strong>
 
                     <span>
                         City Health Office &bull; City of Taguig
@@ -1159,7 +1187,7 @@
 
 
             <p class="register-brand-description">
-                Create your e-Konsulta account to book consultations,
+                Create your E Konsulta account to book consultations,
                 access prescriptions, and manage your health records
                 through your local health center.
             </p>
@@ -1769,6 +1797,12 @@
                 {{-- =================================================
                      LOGIN LINK
                      ================================================= --}}
+
+                <div class="register-actions">
+                    <a href="{{ route('login') }}" class="register-cancel-button">
+                        Cancel and return to login
+                    </a>
+                </div>
 
                 <p class="register-switch">
 

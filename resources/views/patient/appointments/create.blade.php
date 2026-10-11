@@ -261,19 +261,35 @@
                         </option>
 
                         @foreach ($doctors as $doctor)
+                            @php
+                                $doctorName = $doctor->user->name ?? 'Doctor';
+                                $doctorServiceNames = $doctor->services
+                                    ->pluck('name')
+                                    ->filter()
+                                    ->map(function ($name) {
+                                        return \Illuminate\Support\Str::limit(trim($name), 18, '…');
+                                    })
+                                    ->take(2)
+                                    ->values()
+                                    ->all();
+                                $doctorServiceLabel = $doctorServiceNames
+                                    ? implode(' / ', $doctorServiceNames)
+                                    : (\Illuminate\Support\Str::limit(trim($doctor->specialization ?? 'Medical Doctor'), 18, '…'));
+
+                                if ($doctor->services->count() > 2) {
+                                    $doctorServiceLabel .= ' +';
+                                }
+                            @endphp
 
                             <option
                                 value="{{ $doctor->id }}"
                                 data-health-center-id="{{ $doctor->health_center_id }}"
                                 data-service-ids="{{ $doctor->services->pluck('id')->implode(',') }}"
+                                title="{{ $doctorName }} — {{ $doctor->services->pluck('name')->filter()->implode(' / ') ?: ($doctor->specialization ?: 'Medical Doctor') }}"
                                 {{ old('doctor_id') == $doctor->id ? 'selected' : '' }}
                             >
 
-                                {{ $doctor->user->name ?? 'Doctor' }}
-
-                                @if ($doctor->specialization)
-                                    — {{ $doctor->specialization }}
-                                @endif
+                                {{ $doctorName }} — {{ $doctorServiceLabel }}
 
                             </option>
 
@@ -290,13 +306,29 @@
                     class="form-group schedule-summary"
                     style="display: none;"
                 >
+                    <div class="schedule-summary__header">
+                        <strong>Selected appointment</strong>
+                        <span class="schedule-summary__badge">Ready</span>
+                    </div>
 
-                    <p>
-                        <strong>Selected Schedule</strong>
-                    </p>
-
-                    <p id="schedule-details"></p>
-
+                    <div class="schedule-summary__grid">
+                        <div>
+                            <span>Service</span>
+                            <strong id="selected-service-name">—</strong>
+                        </div>
+                        <div>
+                            <span>Date</span>
+                            <strong id="selected-date-label">—</strong>
+                        </div>
+                        <div>
+                            <span>Time</span>
+                            <strong id="selected-time-label">—</strong>
+                        </div>
+                        <div>
+                            <span>Doctor</span>
+                            <strong id="selected-doctor-name">—</strong>
+                        </div>
+                    </div>
                 </div>
 
             </div>
@@ -439,8 +471,14 @@ document.addEventListener('DOMContentLoaded', function () {
     const scheduleInfo =
         document.getElementById('schedule-info');
 
-    const scheduleDetails =
-        document.getElementById('schedule-details');
+    const selectedServiceName =
+        document.getElementById('selected-service-name');
+    const selectedDateLabel =
+        document.getElementById('selected-date-label');
+    const selectedTimeLabel =
+        document.getElementById('selected-time-label');
+    const selectedDoctorName =
+        document.getElementById('selected-doctor-name');
 
     if (
         !serviceSelect ||
@@ -497,8 +535,11 @@ document.addEventListener('DOMContentLoaded', function () {
 
         }
 
-        scheduleInfo.style.display =
-            'none';
+        scheduleInfo.style.display = 'none';
+        selectedServiceName.textContent = serviceSelect.selectedOptions[0]?.text.trim() || '—';
+        selectedDateLabel.textContent = '—';
+        selectedTimeLabel.textContent = '—';
+        selectedDoctorName.textContent = '—';
 
         updateDoctors();
 
@@ -535,8 +576,11 @@ document.addEventListener('DOMContentLoaded', function () {
                         : 'Select a schedule first';
             }
 
-            scheduleInfo.style.display =
-                'none';
+            scheduleInfo.style.display = 'none';
+            selectedServiceName.textContent = serviceSelect.selectedOptions[0]?.text.trim() || '—';
+            selectedDateLabel.textContent = '—';
+            selectedTimeLabel.textContent = '—';
+            selectedDoctorName.textContent = '—';
 
             return;
         }
@@ -578,11 +622,20 @@ document.addEventListener('DOMContentLoaded', function () {
                 'Select a doctor';
         }
 
-        scheduleInfo.style.display =
-            'block';
+        scheduleInfo.style.display = 'block';
+        selectedServiceName.textContent = serviceSelect.selectedOptions[0]?.text.trim() || '—';
+        selectedDateLabel.textContent = formattedDate(selectedSchedule.date, {
+            weekday: 'short',
+            month: 'short',
+            day: 'numeric',
+            year: 'numeric',
+        });
+        selectedTimeLabel.textContent = selectedSchedule.timeLabel;
 
-        scheduleDetails.textContent =
-            selectedSchedule.textContent.trim();
+        const selectedDoctorOption = doctorSelect.selectedOptions[0];
+        selectedDoctorName.textContent = selectedDoctorOption && selectedDoctorOption.value
+            ? selectedDoctorOption.text.trim().replace(/\s*[•—]\s*.*$/, '')
+            : 'Not selected';
     }
 
     serviceSelect.addEventListener(
@@ -614,7 +667,10 @@ document.addEventListener('DOMContentLoaded', function () {
     const timeSlotsList = document.getElementById('appointment-time-slots-list');
     const timeSlotsEmpty = document.getElementById('appointment-time-slots-empty');
     const scheduleInfo = document.getElementById('schedule-info');
-    const scheduleDetails = document.getElementById('schedule-details');
+    const selectedServiceName = document.getElementById('selected-service-name');
+    const selectedDateLabel = document.getElementById('selected-date-label');
+    const selectedTimeLabel = document.getElementById('selected-time-label');
+    const selectedDoctorName = document.getElementById('selected-doctor-name');
     const scheduleDataElement = document.getElementById('appointment-schedule-data');
 
     if (
@@ -686,6 +742,10 @@ document.addEventListener('DOMContentLoaded', function () {
                 ? 'Select an appointment time first'
                 : 'Select a service first';
             scheduleInfo.style.display = 'none';
+            selectedServiceName.textContent = serviceSelect.selectedOptions[0]?.text.trim() || '—';
+            selectedDateLabel.textContent = '—';
+            selectedTimeLabel.textContent = '—';
+            selectedDoctorName.textContent = '—';
             return;
         }
 
@@ -711,14 +771,20 @@ document.addEventListener('DOMContentLoaded', function () {
         }) ? selectedDoctorId : '';
         selectedDoctorId = doctorSelect.value;
 
-        scheduleDetails.textContent = formattedDate(selectedSchedule.date, {
-            weekday: 'long',
-            month: 'long',
+        selectedServiceName.textContent = serviceSelect.selectedOptions[0]?.text.trim() || '—';
+        selectedDateLabel.textContent = formattedDate(selectedSchedule.date, {
+            weekday: 'short',
+            month: 'short',
             day: 'numeric',
             year: 'numeric',
-        }) + ' at ' + selectedSchedule.timeLabel
-            + ' (' + selectedSchedule.available + ' '
-            + (selectedSchedule.available === 1 ? 'slot' : 'slots') + ' remaining)';
+        });
+        selectedTimeLabel.textContent = selectedSchedule.timeLabel + ' (' + selectedSchedule.available + ' '
+            + (selectedSchedule.available === 1 ? 'appointment available' : 'appointments available') + ')';
+
+        const selectedDoctorOption = doctorSelect.selectedOptions[0];
+        selectedDoctorName.textContent = selectedDoctorOption && selectedDoctorOption.value
+            ? selectedDoctorOption.text.trim().replace(/\s*—\s*.*$/, '')
+            : 'Not selected';
         scheduleInfo.style.display = 'block';
     }
 
@@ -770,7 +836,7 @@ document.addEventListener('DOMContentLoaded', function () {
             const remaining = document.createElement('span');
             remaining.className = 'appointment-time-slot__remaining';
             remaining.textContent = schedule.available + ' '
-                + (schedule.available === 1 ? 'slot' : 'slots') + ' left';
+                + (schedule.available === 1 ? 'appointment available' : 'appointments available');
 
             label.append(input, time, remaining);
             timeSlotsList.append(label);
@@ -859,7 +925,7 @@ document.addEventListener('DOMContentLoaded', function () {
                     month: 'long',
                     day: 'numeric',
                 }) + ', ' + remaining + ' appointment '
-                    + (remaining === 1 ? 'slot' : 'slots') + ' available');
+                    + (remaining === 1 ? 'booking available' : 'bookings available'));
                 button.setAttribute('aria-pressed', String(value === selectedDate));
                 if (value === selectedDate) {
                     button.classList.add('is-selected');
@@ -954,6 +1020,10 @@ document.addEventListener('DOMContentLoaded', function () {
 
     doctorSelect.addEventListener('change', function () {
         selectedDoctorId = doctorSelect.value;
+        const selectedDoctorOption = doctorSelect.selectedOptions[0];
+        selectedDoctorName.textContent = selectedDoctorOption && selectedDoctorOption.value
+            ? selectedDoctorOption.text.trim().replace(/\s*—\s*.*$/, '')
+            : 'Not selected';
     });
 
     previousMonthButton.addEventListener('click', function () {

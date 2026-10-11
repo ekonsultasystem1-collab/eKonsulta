@@ -11,6 +11,7 @@
 <div class="card-header">
 
     <div>
+        <span class="page-eyebrow">SCHEDULING</span>
         <h3>Create Appointment Schedules</h3>
 
         <p>
@@ -18,8 +19,8 @@
         </p>
     </div>
 
-    <a href="{{ route('staff.appointment-schedules.index') }}">
-        ← Back to Schedules
+    <a href="{{ route('staff.appointment-schedules.index') }}" class="secondary-button">
+        Back to Schedules
     </a>
 
 </div>
@@ -434,6 +435,8 @@
     <div
         class="form-group preview-panel"
         id="schedule-preview"
+        role="status"
+        aria-live="polite"
     >
 
         <strong>

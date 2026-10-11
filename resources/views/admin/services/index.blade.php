@@ -12,7 +12,7 @@
 
         <div>
             <h3>Services</h3>
-            <p>Manage healthcare services offered through e-Konsulta</p>
+            <p>Manage healthcare services offered through E Konsulta</p>
         </div>
 
         <div class="admin-service-header-actions">
