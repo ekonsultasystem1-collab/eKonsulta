@@ -12,11 +12,30 @@ class AdminUserController extends Controller
     /**
      * Display all system users.
      */
-    public function index(): View
+    public function index(Request $request): View
     {
-        $users = User::orderBy('name')->get();
+        $validated = $request->validate([
+            'search' => ['nullable', 'string', 'max:100'],
+            'sort' => ['nullable', 'in:newest,oldest'],
+        ]);
+        $search = trim($validated['search'] ?? '');
+        $sort = $validated['sort'] ?? 'newest';
 
-        return view('admin.users.index', compact('users'));
+        $users = User::query()
+            ->when($search !== '', function ($query) use ($search) {
+                $term = '%' . $search . '%';
+                $query->where(function ($query) use ($term) {
+                    $query->where('name', 'like', $term)
+                        ->orWhere('email', 'like', $term)
+                        ->orWhere('role', 'like', $term)
+                        ->orWhere('status', 'like', $term);
+                });
+            })
+            ->orderBy('created_at', $sort === 'oldest' ? 'asc' : 'desc')
+            ->orderBy('id', $sort === 'oldest' ? 'asc' : 'desc')
+            ->get();
+
+        return view('admin.users.index', compact('users', 'search', 'sort'));
     }
 
     public function patients(Request $request): View

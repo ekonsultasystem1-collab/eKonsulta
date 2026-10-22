@@ -23,7 +23,14 @@
 
     @if($users->count())
 
-        <x-list-search target="admin-user-list" placeholder="Search by name, email, role, or status..." label="Search system users" />
+        <x-list-search
+            target="admin-user-list"
+            placeholder="Search by name, email, role, or status..."
+            label="Search system users"
+            :default-sort="$sort"
+            :server-sort="true"
+            :search-value="$search"
+        />
 
         <div class="admin-user-list" id="admin-user-list">
 

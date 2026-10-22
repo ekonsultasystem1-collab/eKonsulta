@@ -60,7 +60,7 @@
                 </div>
 
                 <nav class="admin-patient-pagination" aria-label="Patient list pages">
-                    {{ $patients->links() }}
+                    {{ $patients->links('pagination::simple-tailwind') }}
                 </nav>
             @else
                 <div class="admin-patient-empty" role="status">

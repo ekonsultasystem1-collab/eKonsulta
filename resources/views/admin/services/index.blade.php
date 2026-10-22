@@ -45,7 +45,14 @@
 
     @if($services->count())
 
-        <x-list-search target="admin-service-list" placeholder="Search by service name, code, or description..." label="Search healthcare services" />
+        <x-list-search
+            target="admin-service-list"
+            placeholder="Search by service name, code, or description..."
+            label="Search healthcare services"
+            :default-sort="$sort"
+            :server-sort="true"
+            :search-value="$search"
+        />
 
         <div class="admin-service-list" id="admin-service-list">
 

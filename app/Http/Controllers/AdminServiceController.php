@@ -13,11 +13,29 @@ class AdminServiceController extends Controller
     /**
      * Display all services.
      */
-    public function index()
+    public function index(Request $request)
     {
-        $services = Service::orderBy('name')->get();
+        $validated = $request->validate([
+            'search' => ['nullable', 'string', 'max:100'],
+            'sort' => ['nullable', 'in:newest,oldest'],
+        ]);
+        $search = trim($validated['search'] ?? '');
+        $sort = $validated['sort'] ?? 'newest';
 
-        return view('admin.services.index', compact('services'));
+        $services = Service::query()
+            ->when($search !== '', function ($query) use ($search) {
+                $term = '%' . $search . '%';
+                $query->where(function ($query) use ($term) {
+                    $query->where('name', 'like', $term)
+                        ->orWhere('code', 'like', $term)
+                        ->orWhere('description', 'like', $term);
+                });
+            })
+            ->orderBy('created_at', $sort === 'oldest' ? 'asc' : 'desc')
+            ->orderBy('id', $sort === 'oldest' ? 'asc' : 'desc')
+            ->get();
+
+        return view('admin.services.index', compact('services', 'search', 'sort'));
     }
 
     /**

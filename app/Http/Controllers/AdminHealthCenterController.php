@@ -14,18 +14,34 @@ class AdminHealthCenterController extends Controller
     /**
      * Display all health centers.
      */
-    public function index(): View
+    public function index(Request $request): View
     {
+        $validated = $request->validate([
+            'search' => ['nullable', 'string', 'max:100'],
+            'sort' => ['nullable', 'in:newest,oldest'],
+        ]);
+        $search = trim($validated['search'] ?? '');
+        $sort = $validated['sort'] ?? 'newest';
+
         $healthCenters = HealthCenter::with([
             'doctors.user',
             'staff.user',
         ])
-            ->orderBy('name')
+            ->when($search !== '', function ($query) use ($search) {
+                $term = '%' . $search . '%';
+                $query->where(function ($query) use ($term) {
+                    $query->where('name', 'like', $term)
+                        ->orWhere('address', 'like', $term)
+                        ->orWhere('barangay', 'like', $term)
+                        ->orWhere('contact_number', 'like', $term)
+                        ->orWhere('email', 'like', $term);
+                });
+            })
+            ->orderBy('created_at', $sort === 'oldest' ? 'asc' : 'desc')
+            ->orderBy('id', $sort === 'oldest' ? 'asc' : 'desc')
             ->get();
 
-        return view('admin.health-centers.index', compact(
-            'healthCenters'
-        ));
+        return view('admin.health-centers.index', compact('healthCenters', 'search', 'sort'));
     }
 
     public function destroy(HealthCenter $healthCenter): \Illuminate\Http\RedirectResponse

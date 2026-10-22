@@ -43,7 +43,14 @@
 
     @if($healthCenters->count())
 
-        <x-list-search target="admin-health-center-list" placeholder="Search by health center, address, or contact..." label="Search health centers" />
+        <x-list-search
+            target="admin-health-center-list"
+            placeholder="Search by health center, address, or contact..."
+            label="Search health centers"
+            :default-sort="$sort"
+            :server-sort="true"
+            :search-value="$search"
+        />
 
         <div class="admin-health-center-list" id="admin-health-center-list">
 
