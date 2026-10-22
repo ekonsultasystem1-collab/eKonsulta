@@ -7,6 +7,8 @@
         'oldest' => 'Oldest first',
     ],
     'defaultSort' => 'newest',
+    'serverSort' => false,
+    'searchValue' => '',
 ])
 
 <div class="list-search" role="search">
@@ -20,6 +22,7 @@
             id="{{ $target }}-search"
             type="search"
             placeholder="{{ $placeholder }}"
+            value="{{ $searchValue }}"
             autocomplete="off"
             data-list-search-input
             data-list-search-target="{{ $target }}"
@@ -35,6 +38,7 @@
             data-list-sort-target="{{ $target }}"
             aria-label="Sort results"
             data-default-sort="{{ $defaultSort }}"
+            data-server-sort="{{ $serverSort ? 'true' : 'false' }}"
         >
             @foreach($sortOptions as $value => $sortLabel)
                 <option value="{{ $value }}" {{ $value === $defaultSort ? 'selected' : '' }}>

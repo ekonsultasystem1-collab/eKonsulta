@@ -299,9 +299,30 @@ document.addEventListener('DOMContentLoaded', () => {
 
         if (sortSelect instanceof HTMLSelectElement) {
             sortSelect.addEventListener('change', () => {
+                if (sortSelect.dataset.serverSort === 'true') {
+                    const url = new URL(window.location.href);
+                    const query = input.value.trim();
+
+                    url.searchParams.set('sort', sortSelect.value);
+                    url.searchParams.delete('page');
+
+                    if (query) {
+                        url.searchParams.set('search', query);
+                    } else {
+                        url.searchParams.delete('search');
+                    }
+
+                    window.location.assign(url);
+                    return;
+                }
+
                 sortListItems(list, sortSelect.value);
             });
             sortListItems(list, sortSelect.value || sortSelect.dataset.defaultSort || 'newest');
+        }
+
+        if (input.value.trim()) {
+            applySearch();
         }
     });
 

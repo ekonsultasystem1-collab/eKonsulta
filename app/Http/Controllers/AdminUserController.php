@@ -23,16 +23,19 @@ class AdminUserController extends Controller
     {
         $validated = $request->validate([
             'search' => ['nullable', 'string', 'max:100'],
+            'sort' => ['nullable', 'in:newest,oldest'],
         ]);
         $search = trim($validated['search'] ?? '');
+        $sort = $validated['sort'] ?? 'newest';
 
         $patients = \App\Models\Patient::query()
             ->select([
                 'id',
                 'user_id',
                 'patient_number',
+                'created_at',
             ])
-            ->with('user:id,name,email,status,role')
+            ->with('user:id,name,email,status,role,created_at')
             ->whereHas('user', function ($query) {
                 $query->where('role', 'patient');
             })
@@ -46,11 +49,12 @@ class AdminUserController extends Controller
                         });
                 });
             })
-            ->orderBy('patient_number')
+            ->orderBy('created_at', $sort === 'oldest' ? 'asc' : 'desc')
+            ->orderBy('id', $sort === 'oldest' ? 'asc' : 'desc')
             ->paginate(20)
             ->withQueryString();
 
-        return view('admin.patients.index', compact('patients', 'search'));
+        return view('admin.patients.index', compact('patients', 'search', 'sort'));
     }
 
     /**
