@@ -44,6 +44,7 @@ use App\Http\Controllers\AdminServiceController;
 */
 
 
+
 Route::get('/', function () {
     return view('auth.login');
 });
