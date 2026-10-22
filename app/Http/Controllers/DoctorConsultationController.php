@@ -166,8 +166,7 @@ ActivityLog::record(
     Auth::id(),
     'Consultation Created',
     'Doctor created consultation #' . $consultation->id .
-        ' for appointment #' . $appointment->id . '.',
-    $request->ip()
+        ' for appointment #' . $appointment->id . '.'
 );
 
 return redirect()

@@ -31,7 +31,7 @@
 
             @foreach($patients as $patient)
 
-                <div class="patient-card" data-search-item>
+                <div class="patient-card" data-search-item data-sort-timestamp="{{ optional($patient->created_at ?? $patient->user?->created_at)->format('U.u') ?? '' }}" data-sort-order="{{ $patient->id }}">
 
                     <div class="patient-avatar">
                         &#128100;

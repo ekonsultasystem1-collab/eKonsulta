@@ -1,4 +1,47 @@
 document.addEventListener('DOMContentLoaded', () => {
+    document.querySelectorAll('[data-resend-form]').forEach((form) => {
+        const countdown = form.querySelector('[data-resend-countdown]');
+        const button = form.querySelector('[data-resend-button]');
+
+        if (!(countdown instanceof HTMLElement) || !(button instanceof HTMLButtonElement)) {
+            return;
+        }
+
+        const availableAt = Number(countdown.dataset.countdownUntil) * 1000;
+        let timer;
+
+        if (!Number.isFinite(availableAt)) {
+            button.disabled = false;
+            countdown.textContent = '';
+            return;
+        }
+
+        const updateCountdown = () => {
+            const remainingSeconds = Math.max(0, Math.ceil((availableAt - Date.now()) / 1000));
+            button.disabled = remainingSeconds > 0;
+            countdown.textContent = remainingSeconds > 0
+                ? `You can resend a code in ${Math.floor(remainingSeconds / 60)}:${String(remainingSeconds % 60).padStart(2, '0')}.`
+                : 'You can request another code now.';
+
+            if (remainingSeconds === 0) {
+                window.clearInterval(timer);
+            }
+        };
+
+        updateCountdown();
+        timer = window.setInterval(updateCountdown, 1000);
+    });
+
+    document.querySelectorAll('[data-suffix-only]').forEach((field) => {
+        if (!(field instanceof HTMLInputElement)) {
+            return;
+        }
+
+        field.addEventListener('input', () => {
+            field.value = field.value.replace(/[^\p{L}\p{M}\s.'-]/gu, '');
+        });
+    });
+
     const passwordResetForm = document.querySelector('[data-password-reset-form]');
 
     if (passwordResetForm instanceof HTMLFormElement) {
@@ -110,6 +153,12 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     const getItemSortDate = (item) => {
+        const sortTimestampValue = item.dataset.sortTimestamp?.trim();
+        const sortTimestamp = sortTimestampValue ? Number(sortTimestampValue) : Number.NaN;
+        if (!Number.isNaN(sortTimestamp) && Number.isFinite(sortTimestamp)) {
+            return sortTimestamp * 1000;
+        }
+
         const valueCandidates = [
             item.dataset.sortDate,
             item.getAttribute('data-sort-date'),
@@ -150,25 +199,34 @@ document.addEventListener('DOMContentLoaded', () => {
         const sortValue = mode === 'oldest' ? 'oldest' : 'newest';
 
         const sortCollection = (items) => {
+            const originalOrder = new Map(items.map((item, index) => [item, index]));
+
             items.sort((a, b) => {
                 const aValue = getItemSortDate(a);
                 const bValue = getItemSortDate(b);
+                const aHasDate = !Number.isNaN(aValue);
+                const bHasDate = !Number.isNaN(bValue);
+                let dateDifference = 0;
 
-                if (Number.isNaN(aValue) && Number.isNaN(bValue)) {
-                    return 0;
+                if (aHasDate && bHasDate && aValue !== bValue) {
+                    dateDifference = sortValue === 'newest'
+                        ? bValue - aValue
+                        : aValue - bValue;
+                } else if (aHasDate !== bHasDate) {
+                    dateDifference = aHasDate ? -1 : 1;
                 }
 
-                if (Number.isNaN(aValue)) {
-                    return sortValue === 'newest' ? 1 : -1;
+                if (dateDifference !== 0) {
+                    return dateDifference;
                 }
 
-                if (Number.isNaN(bValue)) {
-                    return sortValue === 'newest' ? -1 : 1;
-                }
+                const aOrder = Number(a.dataset.sortOrder);
+                const bOrder = Number(b.dataset.sortOrder);
+                const orderDifference = Number.isFinite(aOrder) && Number.isFinite(bOrder)
+                    ? sortValue === 'newest' ? bOrder - aOrder : aOrder - bOrder
+                    : 0;
 
-                return sortValue === 'newest'
-                    ? bValue - aValue
-                    : aValue - bValue;
+                return orderDifference || originalOrder.get(a) - originalOrder.get(b);
             });
 
             items.forEach((item) => {
@@ -199,7 +257,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const targetId = input.dataset.listSearchTarget;
         const list = targetId ? document.getElementById(targetId) : null;
         const status = input.closest('.list-search')?.querySelector('[data-list-search-status]');
-        const sortSelect = input.closest('.list-search')?.querySelector('[data-list-sort-select]');
+        const sortSelect = targetId ? document.getElementById(`${targetId}-sort`) : null;
 
         if (!(list instanceof HTMLElement) || !(status instanceof HTMLElement)) {
             console.error('List search is missing its target list or status message.');

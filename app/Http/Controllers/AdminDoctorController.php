@@ -131,8 +131,7 @@ class AdminDoctorController extends Controller
             auth()->id(),
             'Doctor Created',
             'Administrator created doctor account: ' .
-                $doctor->user->name . '.',
-            $request->ip()
+                $doctor->user->name . '.'
         );
 
         return redirect()
@@ -272,8 +271,7 @@ class AdminDoctorController extends Controller
             auth()->id(),
             'Doctor Updated',
             'Administrator updated doctor account: ' .
-                $doctor->user->name . '.',
-            $request->ip()
+                $doctor->user->name . '.'
         );
 
         return redirect()
@@ -310,8 +308,7 @@ class AdminDoctorController extends Controller
                     ? 'activated'
                     : 'deactivated') .
                 ' doctor account: ' .
-                $doctor->user->name . '.',
-            $request->ip()
+                $doctor->user->name . '.'
         );
 
         return redirect()

@@ -3,7 +3,9 @@
 namespace App\Http\Controllers;
 
 use App\Models\Service;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
 
 class AdminServiceController extends Controller
@@ -105,12 +107,23 @@ class AdminServiceController extends Controller
     /**
      * Delete a service.
      */
-    public function destroy(Service $service)
+    public function destroy(Service $service): RedirectResponse
     {
-        $service->delete();
+        DB::transaction(function () use ($service): void {
+            $service = Service::query()
+                ->whereKey($service->getKey())
+                ->lockForUpdate()
+                ->firstOrFail();
+
+            $service->healthCenters()->detach();
+            $service->doctors()->detach();
+            $service->status = false;
+            $service->save();
+            $service->delete();
+        });
 
         return redirect()
             ->route('admin.services.index')
-            ->with('success', 'Service deleted successfully.');
+            ->with('success', 'Service removed from active lists. Linked appointment and schedule history was preserved.');
     }
 }

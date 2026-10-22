@@ -45,7 +45,7 @@
 
             <div class="announcement-management-list" id="staff-announcement-list">
                 @foreach($announcements as $announcement)
-                    <article class="announcement-management-card" data-search-item>
+                    <article class="announcement-management-card" data-search-item data-sort-timestamp="{{ ($announcement->published_at ?? $announcement->created_at)?->format('U.u') ?? '' }}" data-sort-order="{{ $announcement->id }}">
                         <div class="announcement-management-thumb">
                             @if($announcement->image_path)
                                 <button
@@ -67,6 +67,9 @@
                                     <span></span>{{ $announcement->is_published ? 'Published' : 'Draft' }}
                                 </span>
                                 <span>{{ $announcement->published_at?->format('M j, Y') ?? 'Not published' }}</span>
+                                @if($announcement->event_end_date)
+                                    <span>Ends {{ $announcement->event_end_date->format('M j, Y') }}</span>
+                                @endif
                             </div>
                             <h4>{{ $announcement->title }}</h4>
                             <p>{{ \Illuminate\Support\Str::limit(strip_tags($announcement->content), 150) }}</p>

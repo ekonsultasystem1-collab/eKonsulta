@@ -19,6 +19,14 @@
             <time datetime="{{ $announcement->published_at?->toIso8601String() }}">
                 {{ $announcement->published_at?->format('F j, Y \a\t g:i A') ?? 'Not published' }}
             </time>
+            @if($announcement->event_start_date || $announcement->event_end_date)
+                <span class="announcement-meta-separator" aria-hidden="true"></span>
+                <span>
+                    Event dates:
+                    {{ $announcement->event_start_date?->format('M j, Y') ?? 'Any date' }}
+                    – {{ $announcement->event_end_date?->format('M j, Y') ?? 'No end date' }}
+                </span>
+            @endif
         </div>
     </header>
 
@@ -47,6 +55,9 @@
             <p>
                 Created by {{ $announcement->creator?->name ?? 'System' }}
                 · {{ $announcement->is_published ? 'Visible to its audience' : 'Only visible to administrators and staff' }}
+                @if($announcement->event_end_date)
+                    · Visible through {{ $announcement->event_end_date->format('F j, Y') }}
+                @endif
             </p>
         </div>
         <div class="form-actions">

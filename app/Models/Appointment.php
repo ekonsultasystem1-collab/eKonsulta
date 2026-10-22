@@ -43,12 +43,12 @@ class Appointment extends Model
 
     public function healthCenter()
     {
-        return $this->belongsTo(HealthCenter::class);
+        return $this->belongsTo(HealthCenter::class)->withTrashed();
     }
 
     public function service()
     {
-        return $this->belongsTo(Service::class);
+        return $this->belongsTo(Service::class)->withTrashed();
     }
 
     public function appointmentSchedule()

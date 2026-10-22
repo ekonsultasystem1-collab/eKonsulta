@@ -46,6 +46,8 @@ class AdminAnnouncementController extends Controller
             'created_by' => auth()->id(),
             'is_published' => $validated['is_published'],
             'published_at' => $validated['is_published'] ? now() : null,
+            'event_start_date' => $validated['event_start_date'] ?? null,
+            'event_end_date' => $validated['event_end_date'] ?? null,
         ]);
 
         if ($announcement->is_published) {
@@ -75,6 +77,8 @@ class AdminAnnouncementController extends Controller
             'health_center_id' => $validated['health_center_id'] ?? null,
             'is_published' => $validated['is_published'],
             'published_at' => $validated['is_published'] ? ($announcement->published_at ?? now()) : null,
+            'event_start_date' => $validated['event_start_date'] ?? null,
+            'event_end_date' => $validated['event_end_date'] ?? null,
         ]);
 
         if ($request->hasFile('image')) {
@@ -135,6 +139,8 @@ class AdminAnnouncementController extends Controller
             'title' => ['required', 'string', 'max:255'],
             'content' => ['required', 'string'],
             'health_center_id' => ['nullable', 'integer', 'exists:health_centers,id'],
+            'event_start_date' => ['nullable', 'date_format:Y-m-d'],
+            'event_end_date' => ['nullable', 'date_format:Y-m-d', 'after_or_equal:event_start_date'],
             'image' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:2048'],
             'is_published' => ['nullable', 'boolean'],
         ]);

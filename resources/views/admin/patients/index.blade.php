@@ -37,7 +37,8 @@
                             @foreach ($patients as $patient)
                                 <tr
                                     data-search-item
-                                    data-sort-date="{{ optional($patient->created_at ?? $patient->user?->created_at)->toIso8601String() ?? '' }}"
+                                    data-sort-timestamp="{{ optional($patient->created_at ?? $patient->user?->created_at)->format('U.u') ?? '' }}"
+                                    data-sort-order="{{ $patient->id }}"
                                 >
                                     <th scope="row">
                                         <span class="admin-patient-table__name">{{ $patient->user->name }}</span>

@@ -7,6 +7,7 @@ use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Validation\Rules\Password;
 use App\Models\ActivityLog;
 use App\Models\HealthCenter;
@@ -17,6 +18,10 @@ use Illuminate\Support\Facades\Mail;
 
 class AuthController extends Controller
 {
+    private const OTP_EXPIRATION_MINUTES = 5;
+
+    private const OTP_RESEND_COOLDOWN_SECONDS = 300;
+
     /*
     |--------------------------------------------------------------------------
     | Show Login Page
@@ -63,8 +68,7 @@ class AuthController extends Controller
 ActivityLog::record(
     $user->id,
     'User Login',
-    'User logged into the system.',
-    $request->ip()
+    'User logged into the system.'
 );
 
 return $this->redirectByRole($user);
@@ -156,6 +160,7 @@ public function register(Request $request)
     'nullable',
     'string',
     'max:30',
+    'regex:/^[\p{L}\p{M}\s.\'-]+$/u',
 ],
 
         'email' => [
@@ -175,7 +180,9 @@ public function register(Request $request)
 
         'date_of_birth' => [
             'required',
-            'date',
+            'date_format:Y-m-d',
+            'after_or_equal:' . now()->subYears(110)->toDateString(),
+            'before_or_equal:' . today()->toDateString(),
         ],
 
         'sex' => [
@@ -221,6 +228,16 @@ public function register(Request $request)
             'digits:11',
         ],
     ]);
+
+    $resendKey = $this->registrationResendKey($validated['email']);
+
+    if (RateLimiter::tooManyAttempts($resendKey, 1)) {
+        return back()
+            ->withErrors([
+                'email' => 'A verification code was already sent. Please wait five minutes before requesting another.',
+            ])
+            ->withInput();
+    }
 
     // Make sure the selected health center is active.
  $healthCenter = HealthCenter::where('id', $validated['health_center_id'])
@@ -284,8 +301,12 @@ if (!$healthCenter) {
     EmailOtp::create([
         'email' => $validated['email'],
         'otp' => $otp,
-        'expires_at' => now()->addMinutes(10),
+        'expires_at' => now()->addMinutes(self::OTP_EXPIRATION_MINUTES),
         'attempts' => 0,
+    ]);
+    RateLimiter::hit($resendKey, self::OTP_RESEND_COOLDOWN_SECONDS);
+    session([
+        'registration_otp_resend_at' => now()->addSeconds(self::OTP_RESEND_COOLDOWN_SECONDS)->timestamp,
     ]);
 
     /*
@@ -296,7 +317,7 @@ if (!$healthCenter) {
 
     Mail::raw(
         "Your E Konsulta verification code is: {$otp}\n\n" .
-        "This code will expire in 10 minutes.\n\n" .
+        "This code will expire in 5 minutes.\n\n" .
         "If you did not request this registration, you may ignore this email.",
         function ($message) use ($validated) {
             $message
@@ -320,7 +341,9 @@ public function showVerifyOtp()
             ]);
     }
 
-    return view('auth.verify-otp');
+    return view('auth.verify-otp', [
+        'resendAvailableAt' => session('registration_otp_resend_at', now()->timestamp),
+    ]);
 }
 
 
@@ -424,7 +447,10 @@ public function verifyOtp(Request $request)
         ->first();
 
     if (!$healthCenter) {
-        session()->forget('pending_registration');
+        session()->forget([
+            'pending_registration',
+            'registration_otp_resend_at',
+        ]);
 
         return redirect()
             ->route('register')
@@ -483,8 +509,7 @@ $user = User::create([
         $user->id,
         'Patient Registration',
         'Patient account was registered successfully and assigned to ' .
-            $healthCenter->name . ' after email verification.',
-        $request->ip()
+            $healthCenter->name . ' after email verification.'
     );
 
     return redirect()
@@ -508,6 +533,13 @@ public function resendOtp(Request $request)
     }
 
     $email = $pendingRegistration['email'];
+    $resendKey = $this->registrationResendKey($email);
+
+    if (RateLimiter::tooManyAttempts($resendKey, 1)) {
+        return back()->withErrors([
+            'otp' => 'Please wait before requesting another verification code.',
+        ]);
+    }
 
     $otp = str_pad(
         (string) random_int(0, 999999),
@@ -521,13 +553,17 @@ public function resendOtp(Request $request)
     EmailOtp::create([
         'email' => $email,
         'otp' => $otp,
-        'expires_at' => now()->addMinutes(10),
+        'expires_at' => now()->addMinutes(self::OTP_EXPIRATION_MINUTES),
         'attempts' => 0,
+    ]);
+    RateLimiter::hit($resendKey, self::OTP_RESEND_COOLDOWN_SECONDS);
+    session([
+        'registration_otp_resend_at' => now()->addSeconds(self::OTP_RESEND_COOLDOWN_SECONDS)->timestamp,
     ]);
 
     Mail::raw(
         "Your new E Konsulta verification code is: {$otp}\n\n" .
-        "This code will expire in 10 minutes.",
+        "This code will expire in 5 minutes.",
         function ($message) use ($email) {
             $message
                 ->to($email)
@@ -538,6 +574,12 @@ public function resendOtp(Request $request)
     return back()
         ->with('success', 'A new verification code has been sent to your Gmail address.');
 }
+
+private function registrationResendKey(string $email): string
+{
+    return 'registration-otp-resend:' . hash('sha256', strtolower($email));
+}
+
     /*
     |--------------------------------------------------------------------------
     | Logout
@@ -552,8 +594,7 @@ public function resendOtp(Request $request)
         ActivityLog::record(
             $user->id,
             'User Logout',
-            'User logged out of the system.',
-            $request->ip()
+            'User logged out of the system.'
         );
     }
 

@@ -1386,8 +1386,11 @@
                                 id="suffix"
                                 type="text"
                                 name="suffix"
+                                data-suffix-only
                                 value="{{ old('suffix') }}"
                                 placeholder="Jr., Sr., III"
+                                maxlength="30"
+                                title="Use letters only; numbers are not allowed."
                             >
 
                         </div>
@@ -1404,6 +1407,8 @@
                                 type="date"
                                 name="date_of_birth"
                                 value="{{ old('date_of_birth') }}"
+                                min="{{ now()->subYears(110)->toDateString() }}"
+                                max="{{ today()->toDateString() }}"
                                 required
                             >
 

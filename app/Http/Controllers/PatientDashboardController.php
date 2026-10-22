@@ -91,6 +91,7 @@ class PatientDashboardController extends Controller
             'user_id',
             $user->id
         )
+            ->available()
             ->whereNull('read_at')
             ->count();
 

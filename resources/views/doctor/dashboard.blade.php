@@ -29,12 +29,6 @@
             &#129658;
         </div>
 
-        <div class="doctor-welcome-actions">
-            <a href="{{ route('doctor.appointments.index') }}" class="primary-button">
-                View Today's Appointments
-            </a>
-        </div>
-
     </section>
 
 

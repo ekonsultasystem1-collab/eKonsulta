@@ -39,7 +39,7 @@
 
             @foreach($appointments as $appointment)
 
-                <div class="doctor-appointment-card" data-search-item>
+                <div class="doctor-appointment-card" data-search-item data-sort-timestamp="{{ $appointment->appointment_date->format('U.u') }}" data-sort-order="{{ $appointment->id }}">
 
                     <div class="doctor-appointment-date">
                         <strong>

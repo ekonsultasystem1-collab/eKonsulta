@@ -29,7 +29,7 @@
 
             @foreach($consultations as $consultation)
 
-                <div class="consultation-list-card" data-search-item>
+                <div class="consultation-list-card" data-search-item data-sort-timestamp="{{ $consultation->consultation_date->format('U.u') }}" data-sort-order="{{ $consultation->id }}">
 
                     {{-- DATE --}}
 

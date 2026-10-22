@@ -51,7 +51,7 @@
 
             @foreach($services as $service)
 
-                <div class="admin-service-card" data-search-item data-sort-date="{{ $service->created_at?->toIso8601String() ?? '' }}">
+                <div class="admin-service-card" data-search-item data-sort-timestamp="{{ $service->created_at?->format('U.u') ?? '' }}" data-sort-order="{{ $service->id }}">
 
                     <div class="admin-service-header">
 
@@ -146,7 +146,7 @@
                                 method="POST"
                                 action="{{ route('admin.services.destroy', $service) }}"
                                 data-confirm-title="Delete this service?"
-                                data-confirm="This action removes the service from the system. It may affect doctor assignments and health center availability."
+                                data-confirm="This service will be removed from active lists. Health center and doctor assignments will be cleared, while appointment and schedule history will be preserved."
                                 data-confirm-ok="Delete service"
                                 data-confirm-cancel="Cancel"
                                 data-confirm-icon="warning"

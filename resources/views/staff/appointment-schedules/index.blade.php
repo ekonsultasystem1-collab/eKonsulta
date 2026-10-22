@@ -100,7 +100,7 @@
                             : 0;
                     @endphp
 
-                    <article class="schedule-card" data-search-item>
+                    <article class="schedule-card" data-search-item data-sort-timestamp="{{ $schedule->schedule_date->format('U.u') }}" data-sort-order="{{ $schedule->id }}">
                         <div class="schedule-card-date">
                             <span>{{ $schedule->schedule_date->format('D') }}</span>
                             <strong>{{ $schedule->schedule_date->format('d') }}</strong>
@@ -183,7 +183,7 @@
                                         : 0;
                                 @endphp
 
-                                <article class="schedule-card schedule-card-past" data-search-item>
+                                <article class="schedule-card schedule-card-past" data-search-item data-sort-timestamp="{{ $schedule->schedule_date->format('U.u') }}" data-sort-order="{{ $schedule->id }}">
                                     <div class="schedule-card-date">
                                         <span>{{ $schedule->schedule_date->format('D') }}</span>
                                         <strong>{{ $schedule->schedule_date->format('d') }}</strong>

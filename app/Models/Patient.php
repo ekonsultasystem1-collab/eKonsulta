@@ -24,7 +24,7 @@ class Patient extends Model
 
     public function healthCenter()
 {
-    return $this->belongsTo(HealthCenter::class);
+    return $this->belongsTo(HealthCenter::class)->withTrashed();
 }
 
     protected function casts(): array

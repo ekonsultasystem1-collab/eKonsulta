@@ -24,6 +24,6 @@ class Staff extends Model
 
     public function healthCenter()
     {
-        return $this->belongsTo(HealthCenter::class);
+        return $this->belongsTo(HealthCenter::class)->withTrashed();
     }
 }

@@ -46,7 +46,7 @@
 
             @foreach($staff as $member)
 
-                <div class="admin-user-card" data-search-item data-sort-date="{{ $member->created_at?->toIso8601String() ?? '' }}">
+                <div class="admin-user-card" data-search-item data-sort-timestamp="{{ $member->created_at?->format('U.u') ?? '' }}" data-sort-order="{{ $member->id }}">
 
                     <div class="admin-user-avatar">
                         👤

@@ -288,8 +288,7 @@ public function print(Prescription $prescription): View
             auth()->id(),
             'Prescription Created',
             'Doctor created prescription ' . $prescription->prescription_number .
-                ' for patient #' . $appointment->patient_id . '.',
-            $request->ip()
+                ' for patient #' . $appointment->patient_id . '.'
         );
 
         return redirect()

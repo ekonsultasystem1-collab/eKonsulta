@@ -3,6 +3,7 @@
 namespace Tests\Feature;
 
 use App\Models\Appointment;
+use App\Models\AppointmentSchedule;
 use App\Models\Doctor;
 use App\Models\HealthCenter;
 use App\Models\Patient;
@@ -15,6 +16,61 @@ use Tests\TestCase;
 class AppointmentApprovalFlowTest extends TestCase
 {
     use RefreshDatabase;
+
+    public function test_patient_sees_confirmation_after_booking_an_appointment(): void
+    {
+        $healthCenter = $this->createHealthCenter('Booking Health Center');
+        $service = Service::create([
+            'name' => 'General Consultation',
+            'code' => 'BOOK-GENERAL',
+            'status' => true,
+        ]);
+        $healthCenter->services()->attach($service);
+
+        $patientUser = $this->createUser('Booking Patient', 'patient', 'booking-patient@example.test');
+        $patient = Patient::create([
+            'user_id' => $patientUser->id,
+            'health_center_id' => $healthCenter->id,
+            'patient_number' => 'PAT-BOOK-001',
+            'date_of_birth' => '1990-01-01',
+            'sex' => 'Female',
+            'contact_number' => '09123456789',
+            'address' => 'Test Address',
+            'emergency_contact_name' => 'Emergency Contact',
+            'emergency_contact_number' => '09987654321',
+        ]);
+        $doctorUser = $this->createUser('Booking Doctor', 'doctor', 'booking-doctor@example.test');
+        $doctor = Doctor::create([
+            'user_id' => $doctorUser->id,
+            'health_center_id' => $healthCenter->id,
+            'license_number' => 'LICENSE-BOOK-001',
+        ]);
+        $doctor->services()->attach($service);
+        $schedule = AppointmentSchedule::create([
+            'health_center_id' => $healthCenter->id,
+            'service_id' => $service->id,
+            'doctor_id' => $doctor->id,
+            'schedule_date' => today()->addDay(),
+            'appointment_time' => '09:00:00',
+            'capacity' => 1,
+        ]);
+
+        $this->actingAs($patientUser)
+            ->post(route('patient.appointments.store'), [
+                'service_id' => $service->id,
+                'appointment_schedule_id' => $schedule->id,
+                'doctor_id' => $doctor->id,
+                'reason' => 'Routine consultation',
+            ])
+            ->assertRedirect(route('patient.dashboard'))
+            ->assertSessionHas('success', 'Appointment Successfully Booked!');
+
+        $this->assertDatabaseHas('appointments', [
+            'patient_id' => $patient->id,
+            'appointment_schedule_id' => $schedule->id,
+            'status' => 'pending',
+        ]);
+    }
 
     public function test_staff_approval_confirms_appointment_for_patient_and_doctor(): void
     {

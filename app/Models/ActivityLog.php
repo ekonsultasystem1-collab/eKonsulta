@@ -13,7 +13,6 @@ class ActivityLog extends Model
         'user_id',
         'action',
         'description',
-        'ip_address',
     ];
 
     public function user()
@@ -24,14 +23,12 @@ class ActivityLog extends Model
     public static function record(
         int $userId,
         string $action,
-        string $description,
-        ?string $ipAddress = null
+        string $description
     ): self {
         return self::create([
             'user_id' => $userId,
             'action' => $action,
             'description' => $description,
-            'ip_address' => $ipAddress,
         ]);
     }
 }

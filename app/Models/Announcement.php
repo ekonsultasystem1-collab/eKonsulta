@@ -14,6 +14,8 @@ class Announcement extends Model
         'health_center_id',
         'created_by',
         'published_at',
+        'event_start_date',
+        'event_end_date',
         'is_published',
     ];
 
@@ -21,13 +23,15 @@ class Announcement extends Model
     {
         return [
             'published_at' => 'datetime',
+            'event_start_date' => 'date',
+            'event_end_date' => 'date',
             'is_published' => 'boolean',
         ];
     }
 
     public function healthCenter(): BelongsTo
     {
-        return $this->belongsTo(HealthCenter::class);
+        return $this->belongsTo(HealthCenter::class)->withTrashed();
     }
 
     public function creator(): BelongsTo
@@ -38,6 +42,14 @@ class Announcement extends Model
     public function scopeVisibleToUser($query, ?User $user = null)
     {
         $query->where('is_published', true)
+            ->where(function ($dates) {
+                $dates->whereNull('event_start_date')
+                    ->orWhereDate('event_start_date', '<=', today());
+            })
+            ->where(function ($dates) {
+                $dates->whereNull('event_end_date')
+                    ->orWhereDate('event_end_date', '>=', today());
+            })
             ->where(function ($scope) use ($user) {
                 $scope->whereNull('health_center_id');
 
@@ -51,6 +63,19 @@ class Announcement extends Model
             });
 
         return $query;
+    }
+
+    public function scopeCurrentlyVisible($query)
+    {
+        return $query->where('is_published', true)
+            ->where(function ($dates) {
+                $dates->whereNull('event_start_date')
+                    ->orWhereDate('event_start_date', '<=', today());
+            })
+            ->where(function ($dates) {
+                $dates->whereNull('event_end_date')
+                    ->orWhereDate('event_end_date', '>=', today());
+            });
     }
 
     public function publish(): void

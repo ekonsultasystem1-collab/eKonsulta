@@ -14,7 +14,7 @@
     </div>
 
     @if($activityLogs->count())
-        <x-list-search target="admin-activity-log-list" placeholder="Search user, role, action, description, or IP..." label="Search activity logs" />
+        <x-list-search target="admin-activity-log-list" placeholder="Search user, role, action, or description..." label="Search activity logs" />
     @endif
 
     <div class="table-responsive">
@@ -25,14 +25,13 @@
                     <th>Role</th>
                     <th>Action</th>
                     <th>Description</th>
-                    <th>IP Address</th>
                     <th>Date & Time</th>
                 </tr>
             </thead>
 
             <tbody id="admin-activity-log-list">
                 @forelse ($activityLogs as $log)
-                    <tr data-search-item>
+                    <tr data-search-item data-sort-timestamp="{{ $log->created_at->format('U.u') }}" data-sort-order="{{ $log->id }}">
                         <td>
                             {{ $log->user?->name ?? 'Unknown User' }}
                         </td>
@@ -50,16 +49,12 @@
                         </td>
 
                         <td>
-                            {{ $log->ip_address ?? 'N/A' }}
-                        </td>
-
-                        <td>
                             {{ $log->created_at->format('M d, Y h:i A') }}
                         </td>
                     </tr>
                 @empty
                     <tr>
-                        <td colspan="6" style="text-align: center;">
+                        <td colspan="5" style="text-align: center;">
                             No activity logs found.
                         </td>
                     </tr>

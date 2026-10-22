@@ -92,6 +92,15 @@ class PatientAppointmentController extends Controller
                 );
         }
 
+        if ($healthCenter->trashed() || $healthCenter->status !== 'active') {
+            return redirect()
+                ->route('patient.dashboard')
+                ->with(
+                    'error',
+                    'Your assigned health center is no longer available for booking. Please contact the administrator.'
+                );
+        }
+
         /*
         |--------------------------------------------------------------------------
         | Services Offered By Patient's Health Center
@@ -603,8 +612,7 @@ $schedules = $schedules->filter(function ($schedule) use ($doctors) {
                 $appointment->appointment_date->format('F j, Y') .
                 ' at ' .
                 $appointment->appointment_time->format('g:i A') .
-                '.',
-            $request->ip()
+                '.'
         );
 
 
@@ -618,7 +626,7 @@ $schedules = $schedules->filter(function ($schedule) use ($doctors) {
             ->route('patient.dashboard')
             ->with(
                 'success',
-                'Appointment booked successfully.'
+                'Appointment Successfully Booked!'
             );
     }
 
@@ -665,8 +673,7 @@ $schedules = $schedules->filter(function ($schedule) use ($doctors) {
             'Appointment Cancelled',
             'Patient cancelled appointment #' .
                 $appointment->id .
-                '.',
-            request()->ip()
+                '.'
         );
 
         return redirect()

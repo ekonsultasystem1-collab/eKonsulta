@@ -26,7 +26,7 @@ class PasswordResetCodeNotification extends Notification
             ->greeting('Password reset request')
             ->line('Use this six-digit code to verify your identity:')
             ->line('**'.$this->code.'**')
-            ->line('This code expires in 10 minutes and can only be used once.')
+            ->line('This code expires in 5 minutes and can only be used once.')
             ->line('If you did not request a password reset, you can ignore this email.');
     }
 }

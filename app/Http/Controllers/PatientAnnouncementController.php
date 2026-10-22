@@ -21,7 +21,7 @@ class PatientAnnouncementController extends Controller
 
     public function show(Announcement $announcement): View
     {
-        if (! $announcement->is_published) {
+        if (! Announcement::currentlyVisible()->whereKey($announcement->id)->exists()) {
             abort(404);
         }
 
@@ -36,7 +36,8 @@ class PatientAnnouncementController extends Controller
 
     public function notifications(): View
     {
-        $notifications = Notification::where('user_id', auth()->id())
+        $notifications = Notification::available()
+            ->where('user_id', auth()->id())
             ->orderByDesc('created_at')
             ->get();
 

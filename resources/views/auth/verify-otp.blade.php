@@ -113,10 +113,12 @@
                 action="{{ route('register.resend-otp') }}"
                 class="ek-form"
                 style="margin-top: 12px;"
+                data-resend-form
             >
                 @csrf
 
-                <button type="submit" class="ek-btn ek-btn--ghost">
+                <p data-resend-countdown data-countdown-until="{{ $resendAvailableAt }}" role="status" aria-live="polite"></p>
+                <button type="submit" class="ek-btn ek-btn--ghost" data-resend-button {{ $resendAvailableAt > now()->timestamp ? 'disabled' : '' }}>
                     Resend Code
                 </button>
             </form>

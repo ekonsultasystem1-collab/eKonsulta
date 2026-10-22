@@ -52,6 +52,8 @@ class StaffAnnouncementController extends Controller
             'created_by' => auth()->id(),
             'is_published' => $validated['is_published'],
             'published_at' => $validated['is_published'] ? now() : null,
+            'event_start_date' => $validated['event_start_date'] ?? null,
+            'event_end_date' => $validated['event_end_date'] ?? null,
         ]);
 
         if ($announcement->is_published) {
@@ -82,6 +84,8 @@ class StaffAnnouncementController extends Controller
             'content' => $validated['content'],
             'is_published' => $validated['is_published'],
             'published_at' => $validated['is_published'] ? ($announcement->published_at ?? now()) : null,
+            'event_start_date' => $validated['event_start_date'] ?? null,
+            'event_end_date' => $validated['event_end_date'] ?? null,
         ]);
 
         if ($request->hasFile('image')) {
@@ -144,6 +148,8 @@ class StaffAnnouncementController extends Controller
         $validated = $request->validate([
             'title' => ['required', 'string', 'max:255'],
             'content' => ['required', 'string'],
+            'event_start_date' => ['nullable', 'date_format:Y-m-d'],
+            'event_end_date' => ['nullable', 'date_format:Y-m-d', 'after_or_equal:event_start_date'],
             'image' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:2048'],
             'is_published' => ['nullable', 'boolean'],
         ]);

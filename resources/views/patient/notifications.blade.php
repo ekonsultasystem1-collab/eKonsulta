@@ -48,7 +48,7 @@
                                         : route($routePrefix . '.announcements.index'))
                                     : null;
                             @endphp
-                            <article class="notification-card notification-card--unread" data-search-item>
+                            <article class="notification-card notification-card--unread" data-search-item data-sort-timestamp="{{ $notification->created_at->format('U.u') }}">
                                 <div class="notification-card-copy">
                                     <div class="notification-card-topline">
                                         <span class="notification-unread-label"><span></span>Unread</span>
@@ -102,7 +102,7 @@
                                         : route($routePrefix . '.announcements.index'))
                                     : null;
                             @endphp
-                            <article class="notification-card notification-card--read" data-search-item>
+                            <article class="notification-card notification-card--read" data-search-item data-sort-timestamp="{{ $notification->created_at->format('U.u') }}">
                                 <div class="notification-card-copy">
                                     <div class="notification-card-topline">
                                         <time datetime="{{ $notification->created_at->toIso8601String() }}">{{ $notification->created_at->format('M j, Y · g:i A') }}</time>

@@ -35,12 +35,6 @@
 
 </div>
 
-    @if ($errors->has('health_center'))
-        <div class="health-center-feedback health-center-feedback--error" role="alert">
-            {{ $errors->first('health_center') }}
-        </div>
-    @endif
-
     @if (session('success'))
         <div class="health-center-feedback health-center-feedback--success" role="status">
             {{ session('success') }}
@@ -55,7 +49,7 @@
 
             @foreach($healthCenters as $healthCenter)
 
-                <div class="admin-health-center-card" data-search-item data-sort-date="{{ $healthCenter->created_at?->toIso8601String() ?? '' }}">
+                <div class="admin-health-center-card" data-search-item data-sort-timestamp="{{ $healthCenter->created_at?->format('U.u') ?? '' }}" data-sort-order="{{ $healthCenter->id }}">
 
                     <div class="admin-health-center-header">
 
@@ -175,7 +169,7 @@
         method="POST"
         action="{{ route('admin.health-centers.destroy', $healthCenter) }}"
         data-confirm-title="Delete this health center?"
-        data-confirm="Deletion is only allowed when no records, services, or announcements are linked. Otherwise, deactivate the center instead."
+        data-confirm="The health center will be removed from active lists and patient booking. Linked services will be unassigned, and appointment and other history will be preserved."
         data-confirm-ok="Delete center"
         data-confirm-cancel="Cancel"
         data-confirm-icon="warning"

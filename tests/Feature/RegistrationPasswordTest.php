@@ -3,6 +3,7 @@
 namespace Tests\Feature;
 
 use App\Models\HealthCenter;
+use App\Models\EmailOtp;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Mail;
 use Tests\TestCase;
@@ -74,6 +75,92 @@ class RegistrationPasswordTest extends TestCase
         $this->assertDatabaseHas('email_otps', [
             'email' => 'valid@gmail.com',
         ]);
+    }
+
+    public function test_patient_may_enter_a_birth_date_exactly_110_years_ago(): void
+    {
+        Mail::fake();
+        $healthCenter = $this->createHealthCenter();
+        $data = $this->registrationData(
+            $healthCenter,
+            '110-years-old@gmail.com',
+            'StrongPass1',
+            'StrongPass1'
+        );
+        $data['date_of_birth'] = today()->subYears(110)->toDateString();
+
+        $this->post(route('register.store'), $data)
+            ->assertRedirect(route('register.verify'));
+    }
+
+    public function test_suffix_rejects_numbers_and_birth_date_must_be_within_the_last_110_years(): void
+    {
+        $healthCenter = $this->createHealthCenter();
+        $data = $this->registrationData(
+            $healthCenter,
+            'suffix-number@gmail.com',
+            'StrongPass1',
+            'StrongPass1'
+        );
+        $data['suffix'] = 'Jr2';
+
+        $this->from(route('register'))
+            ->post(route('register.store'), $data)
+            ->assertSessionHasErrors('suffix');
+
+        foreach ([today()->addDay()->toDateString(), today()->subYears(111)->toDateString()] as $date) {
+            $data['email'] = 'dob-' . str_replace('-', '', $date) . '@gmail.com';
+            $data['suffix'] = 'Jr.';
+            $data['date_of_birth'] = $date;
+
+            $this->from(route('register'))
+                ->post(route('register.store'), $data)
+                ->assertSessionHasErrors('date_of_birth');
+        }
+    }
+
+    public function test_registration_birth_date_picker_is_limited_to_today_and_110_years_ago(): void
+    {
+        $this->get(route('register'))
+            ->assertOk()
+            ->assertSee('min="' . now()->subYears(110)->toDateString() . '"', false)
+            ->assertSee('max="' . today()->toDateString() . '"', false);
+    }
+
+    public function test_registration_code_expires_after_five_minutes_and_resend_is_rate_limited(): void
+    {
+        Mail::fake();
+        $healthCenter = $this->createHealthCenter();
+        $data = $this->registrationData(
+            $healthCenter,
+            'otp-cooldown@gmail.com',
+            'StrongPass1',
+            'StrongPass1'
+        );
+
+        $this->post(route('register.store'), $data)
+            ->assertRedirect(route('register.verify'));
+
+        $otp = EmailOtp::where('email', $data['email'])->firstOrFail();
+        $this->assertSame(now()->addMinutes(5)->timestamp, $otp->expires_at->timestamp);
+        $this->get(route('register.verify'))
+            ->assertOk()
+            ->assertSee('data-resend-button disabled', false);
+
+        $this->from(route('register.verify'))
+            ->post(route('register.resend-otp'))
+            ->assertSessionHasErrors('otp');
+
+        $this->travel(5)->minutes();
+
+        $this->post(route('register.resend-otp'))
+            ->assertRedirect(route('register.verify'))
+            ->assertSessionHas('success');
+
+        $this->assertSame(
+            now()->addMinutes(5)->timestamp,
+            EmailOtp::where('email', $data['email'])->firstOrFail()->expires_at->timestamp
+        );
     }
 
     public function test_registration_rejects_numbers_or_symbols_in_name_fields(): void

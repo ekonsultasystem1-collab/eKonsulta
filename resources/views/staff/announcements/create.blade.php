@@ -51,6 +51,17 @@
                     <small>Include dates, locations, and any instructions patients should follow.</small>
                 </div>
 
+                <div class="form-field">
+                    <label for="event_start_date">Event start date</label>
+                    <input id="event_start_date" name="event_start_date" type="date" value="{{ old('event_start_date') }}">
+                </div>
+
+                <div class="form-field">
+                    <label for="event_end_date">Event end date</label>
+                    <input id="event_end_date" name="event_end_date" type="date" value="{{ old('event_end_date') }}">
+                    <small>The announcement will no longer appear after this date.</small>
+                </div>
+
                 <div class="form-field checkbox-field">
                     <label>
                         <input type="checkbox" name="is_published" value="1" {{ old('is_published', true) ? 'checked' : '' }}>

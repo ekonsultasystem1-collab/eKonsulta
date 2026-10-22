@@ -35,7 +35,7 @@
             >
 
             <h1>Enter your verification code</h1>
-            <p>Enter the six-digit code from your email. It expires in 10 minutes.</p>
+            <p>Enter the six-digit code from your email. It expires in 5 minutes.</p>
 
             @if (session('status'))
                 <div class="alert alert-success" role="status">
@@ -74,6 +74,14 @@
 
                 <button type="submit" class="primary-button">
                     Verify code
+                </button>
+            </form>
+
+            <form method="POST" action="{{ route('password.resend') }}" data-resend-form>
+                @csrf
+                <p data-resend-countdown data-countdown-until="{{ $resendAvailableAt }}" role="status" aria-live="polite"></p>
+                <button type="submit" class="secondary-button" data-resend-button {{ $resendAvailableAt > now()->timestamp ? 'disabled' : '' }}>
+                    Resend code
                 </button>
             </form>
 

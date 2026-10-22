@@ -33,7 +33,7 @@
 
             <div class="announcement-feed" id="patient-announcement-list">
                 @foreach($announcements as $announcement)
-                    <article class="announcement-card" data-search-item>
+                    <article class="announcement-card" data-search-item data-sort-timestamp="{{ ($announcement->published_at ?? $announcement->created_at)?->format('U.u') ?? '' }}" data-sort-order="{{ $announcement->id }}">
                         @if($announcement->image_path)
                             <button
                                 type="button"
@@ -56,6 +56,9 @@
                                     {{ $announcement->healthCenter?->name ?? 'City Health Office' }}
                                 </span>
                                 <span class="announcement-date">{{ $announcement->published_at?->format('M j, Y') ?? 'Recently' }}</span>
+                                @if($announcement->event_end_date)
+                                    <span class="announcement-date">Until {{ $announcement->event_end_date->format('M j, Y') }}</span>
+                                @endif
                             </div>
 
                             <a class="announcement-card-open" href="{{ route('patient.announcements.show', $announcement) }}">

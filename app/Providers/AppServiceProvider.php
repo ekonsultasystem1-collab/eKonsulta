@@ -26,7 +26,7 @@ class AppServiceProvider extends ServiceProvider
             if ($user && ! array_key_exists('notificationCount', $view->getData())) {
                 $view->with(
                     'notificationCount',
-                    $user->notifications()->whereNull('read_at')->count()
+                    $user->notifications()->available()->whereNull('read_at')->count()
                 );
             }
         });

@@ -112,8 +112,7 @@ class StaffAppointmentController extends Controller
             ActivityLog::record(
                 auth()->id(),
                 'Appointment Approved',
-                'Staff approved appointment #' . $lockedAppointment->id . '.',
-                request()->ip()
+                'Staff approved appointment #' . $lockedAppointment->id . '.'
             );
 
             return true;

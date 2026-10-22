@@ -34,4 +34,14 @@ class Notification extends Model
     {
         return $this->belongsTo(Announcement::class);
     }
+
+    public function scopeAvailable($query)
+    {
+        return $query->where(function ($notifications) {
+            $notifications->whereNull('announcement_id')
+                ->orWhereHas('announcement', function ($announcement) {
+                    $announcement->currentlyVisible();
+                });
+        });
+    }
 }

@@ -39,12 +39,15 @@ class PasswordResetTest extends TestCase
             $message = $notification->toMail($user);
 
             return preg_match('/^\d{6}$/', $notification->code) === 1
-                && $message->actionText === null;
+                && $message->actionText === null
+                && in_array('This code expires in 5 minutes and can only be used once.', $message->introLines, true);
         });
 
         $this->get(route('password.otp'))
             ->assertOk()
             ->assertSee('Enter your verification code')
+            ->assertSee('expires in 5 minutes')
+            ->assertSee('data-resend-button disabled', false)
             ->assertSee(route('password.verify'));
     }
 
@@ -186,6 +189,27 @@ class PasswordResetTest extends TestCase
             ->assertSessionHasErrors('otp');
 
         $this->travelBack();
+    }
+
+    public function test_reset_code_can_be_resent_after_five_minute_countdown(): void
+    {
+        Notification::fake();
+        $user = User::factory()->create();
+
+        $this->post(route('password.email'), ['email' => $user->email])
+            ->assertRedirect(route('password.otp'));
+
+        $this->from(route('password.otp'))
+            ->post(route('password.resend'))
+            ->assertSessionHasErrors('otp');
+
+        $this->travel(5)->minutes();
+
+        $this->post(route('password.resend'))
+            ->assertRedirect(route('password.otp'))
+            ->assertSessionHas('status');
+
+        Notification::assertSentToTimes($user, PasswordResetCodeNotification::class, 2);
     }
 
     private function requestCode(User $user): string

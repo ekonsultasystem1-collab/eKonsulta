@@ -30,12 +30,6 @@
                 Health center: {{ auth()->user()->staff?->healthCenter?->name ?? 'Not assigned' }}
             </div>
 
-            <div class="staff-welcome-actions">
-                <a href="{{ route('staff.appointment-schedules.index') }}" class="primary-button">
-                    Manage Schedules
-                </a>
-            </div>
-
         </div>
 
         <div class="welcome-icon" aria-hidden="true">

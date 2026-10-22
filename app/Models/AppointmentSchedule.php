@@ -29,7 +29,7 @@ class AppointmentSchedule extends Model
 
     public function healthCenter()
     {
-        return $this->belongsTo(HealthCenter::class);
+        return $this->belongsTo(HealthCenter::class)->withTrashed();
     }
 
     public function doctor()
@@ -39,7 +39,7 @@ class AppointmentSchedule extends Model
 
     public function service()
     {
-        return $this->belongsTo(Service::class);
+        return $this->belongsTo(Service::class)->withTrashed();
     }
 
     public function appointments()

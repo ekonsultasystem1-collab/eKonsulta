@@ -32,7 +32,7 @@
 
             @foreach($doctors as $doctor)
 
-                <div class="admin-doctor-card" data-search-item data-sort-date="{{ $doctor->created_at?->toIso8601String() ?? '' }}">
+                <div class="admin-doctor-card" data-search-item data-sort-timestamp="{{ $doctor->created_at?->format('U.u') ?? '' }}" data-sort-order="{{ $doctor->id }}">
 
                     <div class="admin-doctor-avatar">
                         &#128104;&#8205;&#9877;

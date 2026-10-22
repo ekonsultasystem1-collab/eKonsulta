@@ -47,6 +47,17 @@
                 </div>
 
                 <div class="form-field">
+                    <label for="event_start_date">Event start date</label>
+                    <input id="event_start_date" name="event_start_date" type="date" value="{{ old('event_start_date', $announcement->event_start_date?->format('Y-m-d')) }}">
+                </div>
+
+                <div class="form-field">
+                    <label for="event_end_date">Event end date</label>
+                    <input id="event_end_date" name="event_end_date" type="date" value="{{ old('event_end_date', $announcement->event_end_date?->format('Y-m-d')) }}">
+                    <small>The announcement will no longer appear after this date.</small>
+                </div>
+
+                <div class="form-field">
                     <label for="image">Replace image <span class="text-muted">(optional)</span></label>
                     <input id="image" name="image" type="file" accept="image/jpeg,image/png,image/webp">
                     <small>Use a JPG, PNG, or WebP image up to 2 MB.</small>

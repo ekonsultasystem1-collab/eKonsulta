@@ -29,7 +29,7 @@
 
             @foreach($healthCenters as $healthCenter)
 
-                <div class="health-center-card" data-search-item data-sort-date="{{ $healthCenter->created_at?->toIso8601String() ?? '' }}">
+                <div class="health-center-card" data-search-item data-sort-timestamp="{{ $healthCenter->created_at?->format('U.u') ?? '' }}" data-sort-order="{{ $healthCenter->id }}">
 
                     <div class="health-center-header">
 

@@ -17,9 +17,11 @@ use Illuminate\View\View;
 
 class PasswordResetController extends Controller
 {
-    private const CODE_EXPIRATION_MINUTES = 10;
+    private const CODE_EXPIRATION_MINUTES = 5;
 
     private const MAX_CODE_ATTEMPTS = 5;
+
+    private const CODE_RESEND_COOLDOWN_SECONDS = 300;
 
     public function showLinkRequestForm(): View
     {
@@ -32,23 +34,17 @@ class PasswordResetController extends Controller
             'email' => ['required', 'email'],
         ]);
         $email = $validated['email'];
-        $code = (string) random_int(100000, 999999);
-        $user = User::where('email', $email)->first();
+        $resendKey = $this->resendKey($email);
 
-        session()->put('password_reset_email', $email);
-        session()->forget(['password_reset_verified_email', 'password_reset_verified_at']);
-        RateLimiter::clear($this->attemptsKey($email));
-        DB::table('password_reset_tokens')->where('email', $email)->delete();
-
-        if ($user) {
-            DB::table('password_reset_tokens')->insert([
-                'email' => $email,
-                'token' => Hash::make($code),
-                'created_at' => now(),
-            ]);
-
-            $user->notify(new PasswordResetCodeNotification($code));
+        if (RateLimiter::tooManyAttempts($resendKey, 1)) {
+            return back()
+                ->withErrors(['email' => 'A verification code was already sent. Please wait five minutes before requesting another.'])
+                ->withInput();
         }
+
+        $this->issueCode($email);
+
+        RateLimiter::hit($resendKey, self::CODE_RESEND_COOLDOWN_SECONDS);
 
         return redirect()
             ->route('password.otp')
@@ -56,6 +52,32 @@ class PasswordResetController extends Controller
                 'status',
                 'If an account exists for that email address, a six-digit verification code has been sent.'
             );
+    }
+
+    public function resendCode(): RedirectResponse
+    {
+        $email = session('password_reset_email');
+
+        if (!is_string($email) || $email === '') {
+            return redirect()
+                ->route('password.request')
+                ->withErrors(['email' => 'Enter your email address to request a password reset code.']);
+        }
+
+        $resendKey = $this->resendKey($email);
+
+        if (RateLimiter::tooManyAttempts($resendKey, 1)) {
+            return back()->withErrors([
+                'otp' => 'Please wait before requesting another verification code.',
+            ]);
+        }
+
+        $this->issueCode($email);
+        RateLimiter::hit($resendKey, self::CODE_RESEND_COOLDOWN_SECONDS);
+
+        return redirect()
+            ->route('password.otp')
+            ->with('status', 'A new verification code has been sent if an account exists for that email address.');
     }
 
     public function showOtpForm(): View|RedirectResponse
@@ -66,7 +88,9 @@ class PasswordResetController extends Controller
                 ->withErrors(['email' => 'Enter your email address to request a password reset code.']);
         }
 
-        return view('auth.verify-password-reset');
+        return view('auth.verify-password-reset', [
+            'resendAvailableAt' => session('password_reset_resend_at', now()->timestamp),
+        ]);
     }
 
     public function verifyOtp(Request $request): RedirectResponse
@@ -180,6 +204,7 @@ class PasswordResetController extends Controller
             'password_reset_email',
             'password_reset_verified_email',
             'password_reset_verified_at',
+            'password_reset_resend_at',
         ]);
 
         return redirect()
@@ -201,5 +226,35 @@ class PasswordResetController extends Controller
     private function attemptsKey(string $email): string
     {
         return 'password-reset-otp:'.hash('sha256', Str::lower($email));
+    }
+
+    private function resendKey(string $email): string
+    {
+        return 'password-reset-resend:'.hash('sha256', Str::lower($email));
+    }
+
+    private function issueCode(string $email): void
+    {
+        $code = (string) random_int(100000, 999999);
+        $user = User::where('email', $email)->first();
+
+        session()->put('password_reset_email', $email);
+        session()->forget(['password_reset_verified_email', 'password_reset_verified_at']);
+        session()->put(
+            'password_reset_resend_at',
+            now()->addSeconds(self::CODE_RESEND_COOLDOWN_SECONDS)->timestamp
+        );
+        RateLimiter::clear($this->attemptsKey($email));
+        DB::table('password_reset_tokens')->where('email', $email)->delete();
+
+        if ($user) {
+            DB::table('password_reset_tokens')->insert([
+                'email' => $email,
+                'token' => Hash::make($code),
+                'created_at' => now(),
+            ]);
+
+            $user->notify(new PasswordResetCodeNotification($code));
+        }
     }
 }
