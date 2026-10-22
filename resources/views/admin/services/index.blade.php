@@ -51,7 +51,7 @@
 
             @foreach($services as $service)
 
-                <div class="admin-service-card" data-search-item>
+                <div class="admin-service-card" data-search-item data-sort-date="{{ $service->created_at?->toIso8601String() ?? '' }}">
 
                     <div class="admin-service-header">
 

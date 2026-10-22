@@ -55,7 +55,7 @@
 
             @foreach($healthCenters as $healthCenter)
 
-                <div class="admin-health-center-card" data-search-item>
+                <div class="admin-health-center-card" data-search-item data-sort-date="{{ $healthCenter->created_at?->toIso8601String() ?? '' }}">
 
                     <div class="admin-health-center-header">
 
