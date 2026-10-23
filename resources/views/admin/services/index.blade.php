@@ -49,8 +49,6 @@
             target="admin-service-list"
             placeholder="Search by service name, code, or description..."
             label="Search healthcare services"
-            :default-sort="$sort"
-            :server-sort="true"
             :search-value="$search"
         />
 

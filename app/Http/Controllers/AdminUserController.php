@@ -16,10 +16,8 @@ class AdminUserController extends Controller
     {
         $validated = $request->validate([
             'search' => ['nullable', 'string', 'max:100'],
-            'sort' => ['nullable', 'in:newest,oldest'],
         ]);
         $search = trim($validated['search'] ?? '');
-        $sort = $validated['sort'] ?? 'newest';
 
         $users = User::query()
             ->when($search !== '', function ($query) use ($search) {
@@ -31,30 +29,26 @@ class AdminUserController extends Controller
                         ->orWhere('status', 'like', $term);
                 });
             })
-            ->orderBy('created_at', $sort === 'oldest' ? 'asc' : 'desc')
-            ->orderBy('id', $sort === 'oldest' ? 'asc' : 'desc')
+            ->orderBy('name')
             ->get();
 
-        return view('admin.users.index', compact('users', 'search', 'sort'));
+        return view('admin.users.index', compact('users', 'search'));
     }
 
     public function patients(Request $request): View
     {
         $validated = $request->validate([
             'search' => ['nullable', 'string', 'max:100'],
-            'sort' => ['nullable', 'in:newest,oldest'],
         ]);
         $search = trim($validated['search'] ?? '');
-        $sort = $validated['sort'] ?? 'newest';
 
         $patients = \App\Models\Patient::query()
             ->select([
                 'id',
                 'user_id',
                 'patient_number',
-                'created_at',
             ])
-            ->with('user:id,name,email,status,role,created_at')
+            ->with('user:id,name,email,status,role')
             ->whereHas('user', function ($query) {
                 $query->where('role', 'patient');
             })
@@ -68,12 +62,11 @@ class AdminUserController extends Controller
                         });
                 });
             })
-            ->orderBy('created_at', $sort === 'oldest' ? 'asc' : 'desc')
-            ->orderBy('id', $sort === 'oldest' ? 'asc' : 'desc')
+            ->orderBy('patient_number')
             ->paginate(20)
             ->withQueryString();
 
-        return view('admin.patients.index', compact('patients', 'search', 'sort'));
+        return view('admin.patients.index', compact('patients', 'search'));
     }
 
     /**

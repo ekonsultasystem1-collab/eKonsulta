@@ -17,10 +17,8 @@ class AdminServiceController extends Controller
     {
         $validated = $request->validate([
             'search' => ['nullable', 'string', 'max:100'],
-            'sort' => ['nullable', 'in:newest,oldest'],
         ]);
         $search = trim($validated['search'] ?? '');
-        $sort = $validated['sort'] ?? 'newest';
 
         $services = Service::query()
             ->when($search !== '', function ($query) use ($search) {
@@ -31,11 +29,10 @@ class AdminServiceController extends Controller
                         ->orWhere('description', 'like', $term);
                 });
             })
-            ->orderBy('created_at', $sort === 'oldest' ? 'asc' : 'desc')
-            ->orderBy('id', $sort === 'oldest' ? 'asc' : 'desc')
+            ->orderBy('name')
             ->get();
 
-        return view('admin.services.index', compact('services', 'search', 'sort'));
+        return view('admin.services.index', compact('services', 'search'));
     }
 
     /**

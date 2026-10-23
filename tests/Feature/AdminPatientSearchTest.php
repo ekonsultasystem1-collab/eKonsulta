@@ -6,14 +6,13 @@ use App\Models\HealthCenter;
 use App\Models\Patient;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Illuminate\Support\Carbon;
 use Tests\TestCase;
 
-class AdminPatientSortingTest extends TestCase
+class AdminPatientSearchTest extends TestCase
 {
     use RefreshDatabase;
 
-    public function test_admin_patient_directory_sorts_by_creation_date_and_keeps_search_query(): void
+    public function test_admin_patient_search_filters_results_and_keeps_search_value_in_form(): void
     {
         $admin = $this->createUser('admin@example.test', 'Admin', 'admin');
         $healthCenter = HealthCenter::create([
@@ -23,31 +22,15 @@ class AdminPatientSortingTest extends TestCase
             'status' => 'active',
         ]);
 
-        $olderPatient = $this->createPatient(
-            $healthCenter,
-            'older@example.test',
-            'Older Patient',
-            'PAT-OLDER',
-            '2020-01-01 09:00:00'
-        );
-        $newerPatient = $this->createPatient(
-            $healthCenter,
-            'newer@example.test',
-            'Newer Patient',
-            'PAT-NEWER',
-            '2025-01-01 09:00:00'
-        );
+        $this->createPatient($healthCenter, 'matching@example.test', 'Matching Patient', 'PAT-MATCH');
+        $this->createPatient($healthCenter, 'other@example.test', 'Other Patient', 'PAT-OTHER');
 
         $this->actingAs($admin)
-            ->get(route('admin.patients.index', ['sort' => 'oldest', 'search' => 'Patient']))
+            ->get(route('admin.patients.index', ['search' => 'Matching']))
             ->assertOk()
-            ->assertSee('value="Patient"', false)
-            ->assertSeeInOrder(['Older Patient', 'Newer Patient']);
-
-        $this->actingAs($admin)
-            ->get(route('admin.patients.index', ['sort' => 'newest']))
-            ->assertOk()
-            ->assertSeeInOrder(['Newer Patient', 'Older Patient']);
+            ->assertSee('value="Matching"', false)
+            ->assertSee('Matching Patient')
+            ->assertDontSee('Other Patient');
     }
 
     private function createUser(string $email, string $name, string $role): User
@@ -64,14 +47,11 @@ class AdminPatientSortingTest extends TestCase
         HealthCenter $healthCenter,
         string $email,
         string $name,
-        string $patientNumber,
-        string $createdAt
+        string $patientNumber
     ): Patient {
         $user = $this->createUser($email, $name, 'patient');
-        $date = Carbon::parse($createdAt);
-        $user->forceFill(['created_at' => $date, 'updated_at' => $date])->saveQuietly();
 
-        $patient = Patient::create([
+        return Patient::create([
             'user_id' => $user->id,
             'health_center_id' => $healthCenter->id,
             'patient_number' => $patientNumber,
@@ -82,9 +62,5 @@ class AdminPatientSortingTest extends TestCase
             'emergency_contact_name' => 'Emergency Contact',
             'emergency_contact_number' => '09987654321',
         ]);
-
-        $patient->forceFill(['created_at' => $date, 'updated_at' => $date])->saveQuietly();
-
-        return $patient;
     }
 }

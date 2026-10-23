@@ -129,163 +129,6 @@ const initializeEkonsultaUi = () => {
         });
     });
 
-    const parseSortDate = (value) => {
-        if (!value || typeof value !== 'string') {
-            return Number.NaN;
-        }
-
-        const normalized = value.trim();
-        if (!normalized) {
-            return Number.NaN;
-        }
-
-        const directTimestamp = Date.parse(normalized);
-        if (!Number.isNaN(directTimestamp)) {
-            return directTimestamp;
-        }
-
-        const match = normalized.match(/\b(?:\d{4}-\d{2}-\d{2}|\d{4}\/\d{2}\/\d{2}|\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}|\d{1,2}\/\d{1,2}\/\d{4}|\d{1,2}-\d{1,2}-\d{4}|\d{1,2} [A-Za-z]{3,9} \d{4}|[A-Za-z]{3,9} \d{1,2}, \d{4}|\d{1,2} [A-Za-z]{3,9} \d{4} at \d{1,2}:\d{2} [AP]M|\d{1,2}:\d{2} [AP]M,? \d{1,2} [A-Za-z]{3,9} \d{4})\b/i);
-        if (!match) {
-            return Number.NaN;
-        }
-
-        return Date.parse(match[0]);
-    };
-
-    const getItemSortDate = (item) => {
-        const sortTimestampValue = item.dataset.sortTimestamp?.trim();
-        const sortTimestamp = sortTimestampValue ? Number(sortTimestampValue) : Number.NaN;
-        if (!Number.isNaN(sortTimestamp) && Number.isFinite(sortTimestamp)) {
-            return sortTimestamp * 1000;
-        }
-
-        const valueCandidates = [
-            item.dataset.sortDate,
-            item.getAttribute('data-sort-date'),
-            item.dataset.createdAt,
-            item.getAttribute('data-created-at'),
-            item.dataset.publishedAt,
-            item.getAttribute('data-published-at'),
-            item.dataset.date,
-            item.getAttribute('data-date'),
-            item.querySelector('time')?.dateTime,
-            item.querySelector('time')?.textContent,
-            item.querySelector('[data-sort-date]')?.dataset.sortDate,
-            item.querySelector('[data-created-at]')?.getAttribute('data-created-at'),
-            item.querySelector('[data-published-at]')?.getAttribute('data-published-at'),
-            item.querySelector('[data-date]')?.getAttribute('data-date')
-        ];
-
-        for (const candidate of valueCandidates) {
-            const parsed = parseSortDate(candidate || '');
-            if (!Number.isNaN(parsed)) {
-                return parsed;
-            }
-        }
-
-        const textMatch = item.textContent?.match(/\b(?:\d{4}-\d{2}-\d{2}|\d{4}\/\d{2}\/\d{2}|\d{1,2}\/\d{1,2}\/\d{4}|\d{1,2}-\d{1,2}-\d{4}|\d{1,2} [A-Za-z]{3,9} \d{4}|[A-Za-z]{3,9} \d{1,2}, \d{4}|\d{1,2} [A-Za-z]{3,9} \d{4} at \d{1,2}:\d{2} [AP]M)\b/i);
-        if (textMatch) {
-            return parseSortDate(textMatch[0]);
-        }
-
-        return Number.NaN;
-    };
-
-    const sortListItems = (list, mode = 'newest') => {
-        if (!(list instanceof HTMLElement)) {
-            return;
-        }
-
-        const sortValue = mode === 'oldest' ? 'oldest' : 'newest';
-
-        const sortCollection = (items) => {
-            const originalOrder = new Map(items.map((item, index) => [item, index]));
-
-            items.sort((a, b) => {
-                const aValue = getItemSortDate(a);
-                const bValue = getItemSortDate(b);
-                const aHasDate = !Number.isNaN(aValue);
-                const bHasDate = !Number.isNaN(bValue);
-                let dateDifference = 0;
-
-                if (aHasDate && bHasDate && aValue !== bValue) {
-                    dateDifference = sortValue === 'newest'
-                        ? bValue - aValue
-                        : aValue - bValue;
-                } else if (aHasDate !== bHasDate) {
-                    dateDifference = aHasDate ? -1 : 1;
-                }
-
-                if (dateDifference !== 0) {
-                    return dateDifference;
-                }
-
-                const aOrder = Number(a.dataset.sortOrder);
-                const bOrder = Number(b.dataset.sortOrder);
-                const orderDifference = Number.isFinite(aOrder) && Number.isFinite(bOrder)
-                    ? sortValue === 'newest' ? bOrder - aOrder : aOrder - bOrder
-                    : 0;
-
-                return orderDifference || originalOrder.get(a) - originalOrder.get(b);
-            });
-
-            items.forEach((item) => {
-                if (item.parentElement) {
-                    item.parentElement.appendChild(item);
-                }
-            });
-        };
-
-        const directItems = Array.from(list.children).filter((child) => child instanceof HTMLElement && child.matches('[data-search-item]'));
-        if (directItems.length) {
-            sortCollection(directItems);
-        }
-
-        list.querySelectorAll('[data-search-group]').forEach((group) => {
-            const items = Array.from(group.querySelectorAll('[data-search-item]'));
-            if (items.length > 1) {
-                sortCollection(items);
-            }
-        });
-
-        if (list.hasAttribute('data-sort-groups')) {
-            const groups = Array.from(list.children).filter((child) => (
-                child instanceof HTMLElement && child.matches('[data-search-group]')
-            ));
-            const originalOrder = new Map(groups.map((group, index) => [group, index]));
-
-            groups.sort((a, b) => {
-                const getBoundaryDate = (group) => {
-                    const dates = Array.from(group.querySelectorAll('[data-search-item]'))
-                        .map(getItemSortDate)
-                        .filter(Number.isFinite);
-
-                    if (dates.length === 0) {
-                        return Number.NaN;
-                    }
-
-                    return sortValue === 'newest' ? Math.max(...dates) : Math.min(...dates);
-                };
-                const aDate = getBoundaryDate(a);
-                const bDate = getBoundaryDate(b);
-                const aHasDate = Number.isFinite(aDate);
-                const bHasDate = Number.isFinite(bDate);
-
-                if (aHasDate !== bHasDate) {
-                    return aHasDate ? -1 : 1;
-                }
-
-                if (aHasDate && aDate !== bDate) {
-                    return sortValue === 'newest' ? bDate - aDate : aDate - bDate;
-                }
-
-                return originalOrder.get(a) - originalOrder.get(b);
-            });
-
-            groups.forEach((group) => list.appendChild(group));
-        }
-    };
-
     document.querySelectorAll('[data-list-search-input]').forEach((input) => {
         if (!(input instanceof HTMLInputElement)) {
             return;
@@ -294,7 +137,7 @@ const initializeEkonsultaUi = () => {
         const targetId = input.dataset.listSearchTarget;
         const list = targetId ? document.getElementById(targetId) : null;
         const status = input.closest('.list-search')?.querySelector('[data-list-search-status]');
-        const sortSelect = targetId ? document.getElementById(`${targetId}-sort`) : null;
+        const serverSearchForm = input.closest('[data-server-search]');
 
         if (!(list instanceof HTMLElement) || !(status instanceof HTMLElement)) {
             console.error('List search is missing its target list or status message.');
@@ -302,6 +145,18 @@ const initializeEkonsultaUi = () => {
         }
 
         const items = Array.from(list.querySelectorAll('[data-search-item]'));
+
+        if (serverSearchForm instanceof HTMLFormElement) {
+            let searchTimer;
+
+            input.addEventListener('input', () => {
+                window.clearTimeout(searchTimer);
+                searchTimer = window.setTimeout(() => serverSearchForm.requestSubmit(), 350);
+            });
+
+            serverSearchForm.addEventListener('submit', () => window.clearTimeout(searchTimer));
+            return;
+        }
 
         const applySearch = () => {
             const query = input.value.trim().toLocaleLowerCase();
@@ -326,37 +181,9 @@ const initializeEkonsultaUi = () => {
             });
 
             status.hidden = query.length === 0 || visibleCount > 0;
-
-            if (sortSelect instanceof HTMLSelectElement) {
-                sortListItems(list, sortSelect.value);
-            }
         };
 
         input.addEventListener('input', applySearch);
-
-        if (sortSelect instanceof HTMLSelectElement) {
-            sortSelect.addEventListener('change', () => {
-                if (sortSelect.dataset.serverSort === 'true') {
-                    const url = new URL(window.location.href);
-                    const query = input.value.trim();
-
-                    url.searchParams.set('sort', sortSelect.value);
-                    url.searchParams.delete('page');
-
-                    if (query) {
-                        url.searchParams.set('search', query);
-                    } else {
-                        url.searchParams.delete('search');
-                    }
-
-                    window.location.assign(url);
-                    return;
-                }
-
-                sortListItems(list, sortSelect.value);
-            });
-            sortListItems(list, sortSelect.value || sortSelect.dataset.defaultSort || 'newest');
-        }
 
         if (input.value.trim()) {
             applySearch();
@@ -364,32 +191,16 @@ const initializeEkonsultaUi = () => {
     });
 
     const userMenu = document.getElementById('userMenu');
-    const userButton = document.getElementById('userMenuButton');
-    const userDropdown = document.getElementById('userDropdown');
-
-    if (userMenu && userButton && userDropdown) {
-        userButton.addEventListener('click', (event) => {
-            event.stopPropagation();
-
-            const isOpen = userMenu.classList.toggle('open');
-
-            userButton.setAttribute(
-                'aria-expanded',
-                isOpen ? 'true' : 'false'
-            );
-        });
-
+    if (userMenu instanceof HTMLDetailsElement) {
         document.addEventListener('click', (event) => {
             if (!userMenu.contains(event.target)) {
-                userMenu.classList.remove('open');
-                userButton.setAttribute('aria-expanded', 'false');
+                userMenu.open = false;
             }
         });
 
         document.addEventListener('keydown', (event) => {
             if (event.key === 'Escape') {
-                userMenu.classList.remove('open');
-                userButton.setAttribute('aria-expanded', 'false');
+                userMenu.open = false;
             }
         });
     }

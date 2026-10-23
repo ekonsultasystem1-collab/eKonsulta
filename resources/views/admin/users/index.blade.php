@@ -27,8 +27,6 @@
             target="admin-user-list"
             placeholder="Search by name, email, role, or status..."
             label="Search system users"
-            :default-sort="$sort"
-            :server-sort="true"
             :search-value="$search"
         />
 

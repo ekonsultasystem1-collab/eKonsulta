@@ -47,8 +47,6 @@
             target="admin-health-center-list"
             placeholder="Search by health center, address, or contact..."
             label="Search health centers"
-            :default-sort="$sort"
-            :server-sort="true"
             :search-value="$search"
         />
 

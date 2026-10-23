@@ -18,10 +18,8 @@ class AdminHealthCenterController extends Controller
     {
         $validated = $request->validate([
             'search' => ['nullable', 'string', 'max:100'],
-            'sort' => ['nullable', 'in:newest,oldest'],
         ]);
         $search = trim($validated['search'] ?? '');
-        $sort = $validated['sort'] ?? 'newest';
 
         $healthCenters = HealthCenter::with([
             'doctors.user',
@@ -37,11 +35,10 @@ class AdminHealthCenterController extends Controller
                         ->orWhere('email', 'like', $term);
                 });
             })
-            ->orderBy('created_at', $sort === 'oldest' ? 'asc' : 'desc')
-            ->orderBy('id', $sort === 'oldest' ? 'asc' : 'desc')
+            ->orderBy('name')
             ->get();
 
-        return view('admin.health-centers.index', compact('healthCenters', 'search', 'sort'));
+        return view('admin.health-centers.index', compact('healthCenters', 'search'));
     }
 
     public function destroy(HealthCenter $healthCenter): \Illuminate\Http\RedirectResponse

@@ -88,14 +88,12 @@
                 @endif
 
                 {{-- User dropdown --}}
-                <div class="user-menu" id="userMenu">
+                <details class="user-menu" id="userMenu">
 
-                    <button
-                        type="button"
+                    <summary
                         class="user-trigger"
                         id="userMenuButton"
                         aria-haspopup="true"
-                        aria-expanded="false"
                         aria-controls="userDropdown"
                     >
                         <span class="avatar" aria-hidden="true">{{ strtoupper(mb_substr($authUser->name, 0, 1)) }}</span>
@@ -106,7 +104,7 @@
                         </span>
 
                         <svg class="chevron" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg>
-                    </button>
+                    </summary>
 
                     <div class="dropdown" id="userDropdown" role="menu" aria-labelledby="userMenuButton">
 
@@ -140,7 +138,7 @@
 
                     </div>
 
-                </div>
+                </details>
 
             </div>
 

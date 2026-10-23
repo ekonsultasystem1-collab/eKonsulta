@@ -20,8 +20,7 @@
                     target="admin-patient-list"
                     placeholder="Search by patient name, email, or patient number..."
                     label="Search patient directory"
-                    :default-sort="$sort"
-                    :server-sort="true"
+                    :server-search="true"
                     :search-value="$search"
                 />
             </div>
