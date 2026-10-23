@@ -1,4 +1,4 @@
-document.addEventListener('DOMContentLoaded', () => {
+const initializeEkonsultaUi = () => {
     document.querySelectorAll('[data-resend-form]').forEach((form) => {
         const countdown = form.querySelector('[data-resend-countdown]');
         const button = form.querySelector('[data-resend-button]');
@@ -247,6 +247,43 @@ document.addEventListener('DOMContentLoaded', () => {
                 sortCollection(items);
             }
         });
+
+        if (list.hasAttribute('data-sort-groups')) {
+            const groups = Array.from(list.children).filter((child) => (
+                child instanceof HTMLElement && child.matches('[data-search-group]')
+            ));
+            const originalOrder = new Map(groups.map((group, index) => [group, index]));
+
+            groups.sort((a, b) => {
+                const getBoundaryDate = (group) => {
+                    const dates = Array.from(group.querySelectorAll('[data-search-item]'))
+                        .map(getItemSortDate)
+                        .filter(Number.isFinite);
+
+                    if (dates.length === 0) {
+                        return Number.NaN;
+                    }
+
+                    return sortValue === 'newest' ? Math.max(...dates) : Math.min(...dates);
+                };
+                const aDate = getBoundaryDate(a);
+                const bDate = getBoundaryDate(b);
+                const aHasDate = Number.isFinite(aDate);
+                const bHasDate = Number.isFinite(bDate);
+
+                if (aHasDate !== bHasDate) {
+                    return aHasDate ? -1 : 1;
+                }
+
+                if (aHasDate && aDate !== bDate) {
+                    return sortValue === 'newest' ? bDate - aDate : aDate - bDate;
+                }
+
+                return originalOrder.get(a) - originalOrder.get(b);
+            });
+
+            groups.forEach((group) => list.appendChild(group));
+        }
     };
 
     document.querySelectorAll('[data-list-search-input]').forEach((input) => {
@@ -612,4 +649,10 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         });
     }
-});
+};
+
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initializeEkonsultaUi, { once: true });
+} else {
+    initializeEkonsultaUi();
+}

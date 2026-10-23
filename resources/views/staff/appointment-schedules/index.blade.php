@@ -80,7 +80,7 @@
 
             <x-list-search target="staff-schedule-list" placeholder="Search date, service, doctor, or health center..." label="Search appointment schedules" />
 
-            <div class="schedule-groups" id="staff-schedule-list">
+            <div class="schedule-groups" id="staff-schedule-list" data-sort-groups>
                 @if($upcomingSchedules->isNotEmpty())
                     <section class="schedule-group" data-search-group aria-labelledby="upcoming-schedules-heading">
                         <div class="schedule-group-heading">
